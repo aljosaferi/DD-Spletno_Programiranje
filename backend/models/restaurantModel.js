@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 
-//const MenuModel = require('./menuModel');
+const MenuModel = require('./menuModel');
 
 var restaurantSchema = new Schema({
 	'name' : { type: String, required: true },
@@ -50,7 +50,7 @@ restaurantSchema.pre('findOneAndDelete', async function(next) {
 		const restaurant = await this.model.findOne(this.getFilter());
 
 		if (restaurant) {
-			//await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
+			await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
 		}
 		next()
 	} catch(error) {
