@@ -14,6 +14,11 @@ module.exports = {
         RestaurantModel.find()
         .populate('tags')
         .then(restaurants => {
+            if(req.query.sortBy) {
+                if(req.query.sortBy === 'lowest-price-first') {
+                    restaurants.sort((a, b) => a.mealSurcharge - b.mealSurcharge);
+                }
+            }
             return res.json(restaurants);
         }).catch(err => {
             return res.status(500).json({
