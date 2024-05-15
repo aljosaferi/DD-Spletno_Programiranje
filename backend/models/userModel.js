@@ -2,7 +2,8 @@ var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 var bcrypt = require('bcrypt');
 
-//const ProfilePhoto = require('./profilePhotoModel');
+//const ProfilePhotoModel = require('./profilePhotoModel');
+const RestaurantModel = require('./restaurantModel');
 
 var userSchema = new Schema({
 	'username' : { type: String, required: true },
@@ -16,18 +17,29 @@ var userSchema = new Schema({
 		required: true
 	},
 	//Če uporabnik nima userType, je navadni uporabnik
-	'userType' : { type: String, enum: ['admin', 'restaurantOwner'], required: false },
-	'restaurants': [{
-		type: Schema.Types.ObjectId,
-		ref: 'restaurant',
-		required: function() { return this.userType === 'restaurantOwner'; }
-	  }]
+	'userType' : { 
+		type: String, 
+		enum: ['admin', 'restaurantOwner'], 
+		required: false 
+	},
+	'restaurants': {
+		type: [{ 
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'restaurant',
+			required: true
+		}],
+		required: function() { return this.userType === 'restaurantOwner'; },
+		default: undefined
+	}
 });
 
 userSchema.pre('save', function(next){
 	if (this.userType !== 'restaurantOwner' && this.restaurants) {
 		next(new Error('Only restaurant owners can have owned restaurants.'));
-	  }
+	}
+	if (this.userType === 'restaurantOwner' && this.restaurants.length < 1) {
+		next(new Error('Owner must have atleas one restaurant.'));
+	}
 	var user = this;
 	bcrypt.hash(user.password, 10, function(err, hash){
 		if(err){
@@ -38,14 +50,20 @@ userSchema.pre('save', function(next){
 	});
 });
 
-const defaultProfilePhotoId = "tuVstaviId";
+const defaultProfilePhotoId = "6643e9dae7143b61c594c674";
 
-userSchema.pre('findOneAndRemove', async function(next) {
+userSchema.pre('findOneAndDelete', async function(next) {
 	try {
-		const doc = await this.model.findOne(this.getFilter());
+		const user = await this.model.findOne(this.getFilter());
 
-		if (doc && doc.profilePhoto && doc.profilePhoto.toString() !== defaultProfilePhotoId) {
-			await ProfilePhoto.findByIdAndDelete(doc.profilePhoto);
+		if (user && user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
+			//await ProfilePhotoModel.findByIdAndDelete(doc.profilePhoto);
+		}
+
+		if(user.userType && user.userType === "restaurantOwner") {
+			for (let restaurantId of user.restaurants) {
+				await RestaurantModel.findOneAndDelete(restaurantId)
+			}
 		}
 		next()
 	} catch(error) {
