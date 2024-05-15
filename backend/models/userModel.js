@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 var bcrypt = require('bcrypt');
 
-//const ProfilePhotoModel = require('./profilePhotoModel');
+const PhotoModel = require('./photoModel');
 const RestaurantModel = require('./restaurantModel');
 
 var userSchema = new Schema({
@@ -13,7 +13,7 @@ var userSchema = new Schema({
 	'password' : { type: String, required: true },
 	'profilePhoto' : {
 	 	type: Schema.Types.ObjectId,
-	 	ref: 'profilePhoto',
+	 	ref: 'photo',
 		required: true
 	},
 	//Če uporabnik nima userType, je navadni uporabnik
@@ -50,17 +50,17 @@ userSchema.pre('save', function(next){
 	});
 });
 
-const defaultProfilePhotoId = "6643e9dae7143b61c594c674";
+const defaultProfilePhotoId = "6644efea3472bd2f6d5a5f4d";
 
 userSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const user = await this.model.findOne(this.getFilter());
 
 		if (user && user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
-			//await ProfilePhotoModel.findByIdAndDelete(doc.profilePhoto);
+			await PhotoModel.findByIdAndDelete(doc.profilePhoto);
 		}
 
-		if(user.userType && user.userType === "restaurantOwner") {
+		if(user && user.userType && user.userType === "restaurantOwner") {
 			for (let restaurantId of user.restaurants) {
 				await RestaurantModel.findOneAndDelete(restaurantId)
 			}

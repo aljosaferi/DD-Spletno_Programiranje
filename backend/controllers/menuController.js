@@ -12,7 +12,7 @@ module.exports = {
      */
     list: function (req, res) {
         MenuModel.find()
-        //.populate('tag')
+        .populate('tag')
         .then(menus => {
             return res.json(menus);
         })
@@ -31,7 +31,7 @@ module.exports = {
         var id = req.params.id;
 
         MenuModel.findOne({_id: id})
-        //.populate('tag')
+        .populate('tag')
         .then(menu => {
             if (!menu) {
                 return res.status(404).json({

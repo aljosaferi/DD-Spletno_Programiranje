@@ -12,7 +12,7 @@ module.exports = {
      */
     list: function (req, res) {
         RestaurantModel.find()
-        //.populate('tags')
+        .populate('tags')
         .then(restaurants => {
             return res.json(restaurants);
         }).catch(err => {
