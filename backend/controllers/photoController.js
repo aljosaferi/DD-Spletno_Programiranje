@@ -1,4 +1,5 @@
 var PhotoModel = require('../models/photoModel.js');
+var UserModel = require('../models/userModel.js');
 
 /**
  * photoController.js
@@ -57,7 +58,16 @@ module.exports = {
 
         photo.save()
         .then(photo => {
-            return res.status(201).json(photo);
+            UserModel.findByIdAndUpdate(req.session.userId, { profilePhoto: photo._id }, { new: true })
+            .then(() => {
+                return res.status(201).json(photo);
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    message: "Error when updating user's profile photo",
+                    error: err
+                });
+            });
         })
         .catch(err => {
             return res.status(500).json({
@@ -115,7 +125,17 @@ module.exports = {
                     message: 'No such photo'
                 });
             }
-            return res.status(204).json();
+
+            UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: "6644fd61d01c9038f1f3bf8e" }, { new: true })
+            .then(() => {
+                return res.status(204).json();
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    message: "Error when updating user's profile photo after deletion",
+                    error: err
+                });
+            });
         })
         .catch(err => {
             return res.status(500).json({

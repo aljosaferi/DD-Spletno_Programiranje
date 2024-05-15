@@ -38,7 +38,7 @@ userSchema.pre('save', function(next){
 		next(new Error('Only restaurant owners can have owned restaurants.'));
 	}
 	if (this.userType === 'restaurantOwner' && this.restaurants.length < 1) {
-		next(new Error('Owner must have atleas one restaurant.'));
+		next(new Error('Owner must have atleast one restaurant.'));
 	}
 	var user = this;
 	bcrypt.hash(user.password, 10, function(err, hash){
@@ -56,13 +56,14 @@ userSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const user = await this.model.findOne(this.getFilter());
 		if(user) {
+
 			if (user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
 				await PhotoModel.findOneAndDelete({ _id: user.profilePhoto });
 			}
 
 			await RestaurantModel.updateMany(
 				{}, 
-				{ $pull: { ratings: { user: mongoose.Types.ObjectId(user._id) } } }
+				{ $pull: { ratings: { user: user._id } } }
 			);
 
 			if(user.userType && user.userType === "restaurantOwner") {
@@ -75,7 +76,28 @@ userSchema.pre('findOneAndDelete', async function(next) {
 	} catch(error) {
 		next(error)
 	}
-	
-  });
+});
 
-module.exports = mongoose.model('user', userSchema);
+userSchema.statics.authenticate = function(username, password, callback){
+	User.findOne({username: username})
+	.then(user => {
+		if(!user) {
+			var err = new Error("User not found.");
+			err.status = 401;
+			return callback(err);
+		} 
+		bcrypt.compare(password, user.password, function(err, result){
+			if(result === true){
+				return callback(null, user);
+			} else{
+				return callback();
+			}
+		});
+	})
+	.catch(err => {
+		return callback(err);
+	});
+}
+
+var User = mongoose.model('user', userSchema);
+module.exports = User;

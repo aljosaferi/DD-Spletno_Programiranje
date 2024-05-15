@@ -136,5 +136,30 @@ module.exports = {
                 error: err
             });
         });
+    },
+
+    login: function(req, res, next){
+        UserModel.authenticate(req.body.username, req.body.password, function(err, user){
+            if(err || !user){
+                var err = new Error('Wrong username or password');
+                err.status = 401;
+                return next(err);
+            }
+            req.session.userId = user._id;
+
+            return res.json(user);
+        });
+    },
+
+    logout: function(req, res, next){
+        if(req.session){
+            req.session.destroy(function(err){
+                if(err){
+                    return next(err);
+                } else{
+                    return res.status(201).json({});
+                }
+            });
+        }
     }
 };
