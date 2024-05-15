@@ -13,7 +13,7 @@ var menuSchema = new Schema({
 	'tag' : {
 		type: Schema.Types.ObjectId,
 		ref: 'tag',
-	   required: true
+	   	required: true
    },
 });
 

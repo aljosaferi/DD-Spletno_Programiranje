@@ -108,7 +108,7 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        PhotoModel.findOneAndDelete(id)
+        PhotoModel.findOneAndDelete({ _id: id })
         .then(photo => {
             if (!photo) {
                 return res.status(404).json({

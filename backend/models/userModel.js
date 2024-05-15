@@ -50,7 +50,7 @@ userSchema.pre('save', function(next){
 	});
 });
 
-const defaultProfilePhotoId = "6644efea3472bd2f6d5a5f4d";
+const defaultProfilePhotoId = "6644fd61d01c9038f1f3bf8e";
 
 userSchema.pre('findOneAndDelete', async function(next) {
 	try {

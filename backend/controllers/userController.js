@@ -59,7 +59,7 @@ module.exports = {
 			lastName : req.body.lastName,
 			email : req.body.email,
 			password : req.body.password,
-			profilePhoto : "6644efea3472bd2f6d5a5f4d",
+			profilePhoto : "6644fd61d01c9038f1f3bf8e",
 			userType : req.body.userType,
             restaurants : req.body.restaurants
         });
@@ -121,7 +121,7 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        UserModel.findOneAndDelete(id)
+        UserModel.findOneAndDelete({ _id: id })
         .then(user => {
             if (!user) {
                 return res.status(404).json({

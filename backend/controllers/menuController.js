@@ -114,7 +114,7 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        MenuModel.findOneAndDelete(id)
+        MenuModel.findOneAndDelete({ _id: id })
         .then(menu => {
             if (!menu) {
                 return res.status(404).json({
