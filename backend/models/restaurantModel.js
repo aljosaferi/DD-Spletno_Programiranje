@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 
 const MenuModel = require('./menuModel');
+const UserModel = require('./userModel');
 
 var restaurantSchema = new Schema({
 	'name' : { type: String, required: true },
@@ -58,6 +59,10 @@ restaurantSchema.pre('findOneAndDelete', async function(next) {
 
 		if (restaurant) {
 			await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
+			await UserModel.updateMany(
+                { restaurants: restaurant._id }, 
+                { $pull: { restaurants: restaurant._id } }
+            );
 		}
 		next()
 	} catch(error) {

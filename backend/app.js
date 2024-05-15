@@ -40,6 +40,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+var session = require('express-session');
+var MongoStore = require('connect-mongo');
+app.use(session({
+  secret: 'work hard',
+  resave: true,
+  saveUninitialized: false,
+  store: MongoStore.create({mongoUrl: mongoDB})
+}));
+
+
+app.use(function (req, res, next) {
+  res.locals.session = req.session;
+  next();
+});
+
 app.use('/users', usersRouter);
 app.use('/restaurants', restaurantsRouter);
 app.use('/menus', menusRouter);

@@ -72,7 +72,18 @@ module.exports = {
 
         restaurant.save()
         .then(restaurant => {
-            return res.status(201).json(restaurant);
+            const UserModel = mongoose.model('User');
+    
+            UserModel.findByIdAndUpdate( req.session.userId, { $push: { restaurants: restaurant._id } })
+            .then(() => {
+                return res.status(201).json(restaurant)
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    message: 'Error when adding restaurant to owner',
+                    error: err
+                });
+            });
         })
         .catch(err => {
             return res.status(500).json({
