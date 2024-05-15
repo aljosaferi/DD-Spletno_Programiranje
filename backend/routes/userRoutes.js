@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var userController = require('../controllers/userController.js');
 
+var cookieJWTAuth = require('../middleware/cookieJWTAuth').cookieJWTAuth;
+
 var UserModel = require('../models/userModel.js');
 
 
@@ -41,7 +43,7 @@ router.post('/', userController.create);
 router.post('/login', userController.login);
 
 //PUT
-router.put('/:id', checkOwnership, userController.update);
+router.put('/:id', cookieJWTAuth, checkOwnership, userController.update);
 
 //DELETE
 router.delete('/:id', checkOwnership, userController.remove);
