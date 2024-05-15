@@ -55,14 +55,20 @@ const defaultProfilePhotoId = "6644fd61d01c9038f1f3bf8e";
 userSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const user = await this.model.findOne(this.getFilter());
+		if(user) {
+			if (user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
+				await PhotoModel.findOneAndDelete({ _id: user.profilePhoto });
+			}
 
-		if (user && user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
-			await PhotoModel.findByIdAndDelete(doc.profilePhoto);
-		}
+			await RestaurantModel.updateMany(
+				{}, 
+				{ $pull: { ratings: { user: mongoose.Types.ObjectId(user._id) } } }
+			);
 
-		if(user && user.userType && user.userType === "restaurantOwner") {
-			for (let restaurantId of user.restaurants) {
-				await RestaurantModel.findOneAndDelete(restaurantId)
+			if(user.userType && user.userType === "restaurantOwner") {
+				for (let restaurantId of user.restaurants) {
+					await RestaurantModel.findOneAndDelete({_id: restaurantId})
+				}
 			}
 		}
 		next()

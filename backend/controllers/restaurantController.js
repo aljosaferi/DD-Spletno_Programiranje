@@ -31,6 +31,7 @@ module.exports = {
 
         RestaurantModel.findOne({_id: id})
         .populate('menus')
+        .populate('ratings')
         .then(restaurant => {
             if (!restaurant) {
                 return res.status(404).json({
@@ -60,7 +61,8 @@ module.exports = {
 			workingHours : req.body.workingHours,
 			tags : req.body.tags,
 			coordinates : req.body.coordinates,
-			menus : req.body.menus
+			menus : req.body.menus,
+            ratings : req.body.ratings
         });
 
         restaurant.save()
@@ -70,6 +72,48 @@ module.exports = {
         .catch(err => {
             return res.status(500).json({
                 message: 'Error when creating restaurant',
+                error: err
+            });
+        });
+    },
+
+    rate: function (req, res) {
+        var id = req.params.id;
+        var score = req.query.score;
+
+        RestaurantModel.findOne({_id: id})
+        .then(restaurant => {
+            if (!restaurant) {
+                return res.status(404).json({
+                    message: 'No such restaurant'
+                });
+            }
+
+            const ratingIndex = restaurant.ratings.findIndex(rating => rating.user.toString() === req.session.userId);
+
+            if (ratingIndex !== -1) {
+                restaurant.ratings[ratingIndex].score = Number(score);
+            } else {
+                restaurant.ratings.push({
+                    user: req.session.userId,
+                    score: Number(score)
+                });
+            }
+			
+            restaurant.save()
+            .then(restaurant => {
+                return res.json(restaurant);
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    message: 'Error when rating restaurant.',
+                    error: err
+                });
+            });
+        })
+        .catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting restaurant',
                 error: err
             });
         });

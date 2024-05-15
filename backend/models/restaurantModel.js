@@ -33,6 +33,13 @@ var restaurantSchema = new Schema({
 		}],
 		required: true 
 	},
+	'ratings': {
+		type: [{
+        	user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+        	score: { type: Number, required: true, min: 1, max: 5 }
+    	}],
+		required: true 
+	}	
 });
 
 restaurantSchema.pre('save', function(next){
