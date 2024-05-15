@@ -123,7 +123,7 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        RestaurantModel.findOneAndDelete(id)
+        RestaurantModel.findOneAndDelete({ _id: id })
         .then(restaurant => {
             if (!restaurant) {
                 return res.status(404).json({
