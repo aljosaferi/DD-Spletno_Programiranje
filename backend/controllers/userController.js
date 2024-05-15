@@ -11,7 +11,8 @@ module.exports = {
      * userController.list()
      */
     list: function (req, res) {
-        UserModel.find().select('-password').populate('profilePhoto').exec()
+        UserModel.find().select('-password')
+        //.populate('profilePhoto')
         .then(users => {
             return res.json(users);
         })
@@ -29,7 +30,9 @@ module.exports = {
     show: function (req, res) {
         var id = req.params.id;
     
-        UserModel.findOne({_id: id}).select('-password').populate('profilePhoto').populate('restaurants').exec()
+        UserModel.findOne({_id: id}).select('-password')
+        //.populate('profilePhoto')
+        //.populate('restaurants')
             .then(user => {
                 if (!user) {
                     return res.status(404).json({
@@ -58,9 +61,10 @@ module.exports = {
 			password : req.body.password,
 			profilePhoto : req.body.profilePhoto,
 			userType : req.body.userType,
+            restaurants : req.body.restaurants
         });
 
-        if (req.body.userType === 'restaurantOwner') {
+        /*if (req.body.userType === 'restaurantOwner') {
             user.restaurants = req.body.restaurants;
         } else if('restaurants' in req.body) {
             return res.status(400).json({
@@ -68,7 +72,7 @@ module.exports = {
             });
         } else {
             user.restaurants = undefined;
-        }
+        }*/
 
         user.save()
         .then(user => {
@@ -88,7 +92,7 @@ module.exports = {
     update: function (req, res) {
         var id = req.params.id;
 
-        UserModel.findOne({_id: id}).exec()
+        UserModel.findOne({_id: id})
         .then(user => {
             if (!user) {
                 return res.status(404).json({
@@ -127,7 +131,7 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        UserModel.findByIdAndRemove(id)
+        UserModel.findOneAndDelete(id)
         .then(user => {
             if (!user) {
                 return res.status(404).json({
