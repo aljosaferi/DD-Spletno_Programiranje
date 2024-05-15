@@ -1,3 +1,4 @@
+var jwt = require("jsonwebtoken");
 var UserModel = require('../models/userModel.js');
 
 /**
@@ -146,6 +147,11 @@ module.exports = {
                 return next(err);
             }
             req.session.userId = user._id;
+
+            const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET)
+            res.cookie("token", token, {
+                httpOnly: true,
+              });
 
             return res.json(user);
         });

@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config();
 
 var mongoose = require("mongoose");
 var mongoDB = "mongodb+srv://admin:sSIqaEnhN9pQ4r3T@studentskaprehrana.acigcoy.mongodb.net/data?retryWrites=true&w=majority&appName=studentskaPrehrana"
