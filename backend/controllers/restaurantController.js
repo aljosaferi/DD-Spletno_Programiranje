@@ -30,7 +30,7 @@ module.exports = {
         var id = req.params.id;
 
         RestaurantModel.findOne({_id: id})
-        //.populate('menus')
+        .populate('menus')
         .then(restaurant => {
             if (!restaurant) {
                 return res.status(404).json({

@@ -32,7 +32,7 @@ module.exports = {
     
         UserModel.findOne({_id: id}).select('-password')
         //.populate('profilePhoto')
-        //.populate('restaurants')
+        .populate('restaurants')
             .then(user => {
                 if (!user) {
                     return res.status(404).json({
@@ -63,16 +63,6 @@ module.exports = {
 			userType : req.body.userType,
             restaurants : req.body.restaurants
         });
-
-        /*if (req.body.userType === 'restaurantOwner') {
-            user.restaurants = req.body.restaurants;
-        } else if('restaurants' in req.body) {
-            return res.status(400).json({
-                message: "Only restaurant owners can have restaurants."
-            });
-        } else {
-            user.restaurants = undefined;
-        }*/
 
         user.save()
         .then(user => {
