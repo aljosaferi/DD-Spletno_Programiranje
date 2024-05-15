@@ -8,6 +8,7 @@ router.get('/:id', restaurantController.show);
 
 //POST
 router.post('/', restaurantController.create);
+router.post('/:id/rate', restaurantController.rate);
 
 //PUT
 router.put('/:id', restaurantController.update);
