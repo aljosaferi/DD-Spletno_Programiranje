@@ -12,7 +12,7 @@ module.exports = {
      */
     list: function (req, res) {
         UserModel.find().select('-password')
-        //.populate('profilePhoto')
+        .populate('profilePhoto')
         .then(users => {
             return res.json(users);
         })
@@ -31,7 +31,7 @@ module.exports = {
         var id = req.params.id;
     
         UserModel.findOne({_id: id}).select('-password')
-        //.populate('profilePhoto')
+        .populate('profilePhoto')
         .populate('restaurants')
             .then(user => {
                 if (!user) {
@@ -59,7 +59,7 @@ module.exports = {
 			lastName : req.body.lastName,
 			email : req.body.email,
 			password : req.body.password,
-			profilePhoto : req.body.profilePhoto,
+			profilePhoto : "6644efea3472bd2f6d5a5f4d",
 			userType : req.body.userType,
             restaurants : req.body.restaurants
         });
