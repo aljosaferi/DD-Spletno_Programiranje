@@ -16,11 +16,10 @@ var userSchema = new Schema({
 	 	ref: 'photo',
 		required: true
 	},
-	//Če uporabnik nima userType, je navadni uporabnik
 	'userType' : { 
 		type: String, 
-		enum: ['admin', 'restaurantOwner'], 
-		required: false 
+		enum: ['regular', 'admin', 'restaurantOwner'], 
+		required: true 
 	},
 	'restaurants': {
 		type: [{ 
@@ -29,16 +28,13 @@ var userSchema = new Schema({
 			required: true
 		}],
 		required: function() { return this.userType === 'restaurantOwner'; },
-		default: undefined
+		default: function() { return this.userType === 'restaurantOwner' ? [] : undefined; }
 	}
 });
 
 userSchema.pre('save', function(next){
 	if (this.userType !== 'restaurantOwner' && this.restaurants) {
 		next(new Error('Only restaurant owners can have owned restaurants.'));
-	}
-	if (this.userType === 'restaurantOwner' && this.restaurants.length < 1) {
-		next(new Error('Owner must have atleast one restaurant.'));
 	}
 	var user = this;
 	bcrypt.hash(user.password, 10, function(err, hash){
@@ -50,27 +46,24 @@ userSchema.pre('save', function(next){
 	});
 });
 
-const defaultProfilePhotoId = "6644fd61d01c9038f1f3bf8e";
-
 userSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const user = await this.model.findOne(this.getFilter());
 		if(user) {
-
-			if (user.profilePhoto && user.profilePhoto.toString() !== defaultProfilePhotoId) {
+			if (user.profilePhoto && user.profilePhoto.toString() !== process.env.DEFAULT_AVATAR_ID) {
+				console.log(2)
 				await PhotoModel.findOneAndDelete({ _id: user.profilePhoto });
 			}
-
 			await RestaurantModel.updateMany(
 				{}, 
 				{ $pull: { ratings: { user: user._id } } }
 			);
-
 			if(user.userType && user.userType === "restaurantOwner") {
 				for (let restaurantId of user.restaurants) {
 					await RestaurantModel.findOneAndDelete({_id: restaurantId})
 				}
 			}
+			console.log(6)
 		}
 		next()
 	} catch(error) {

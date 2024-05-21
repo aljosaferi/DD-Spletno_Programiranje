@@ -2,30 +2,19 @@ var express = require('express');
 var router = express.Router();
 var menuController = require('../controllers/menuController.js');
 
-var UserModel = require('../models/userModel.js');
+var JWTAuthenticate = require('../middleware/cookieJWTAuth');
+var isRestaurantOwner = require('../middleware/isRestaurantOwner');
 
 
-function mustBeRestaurantOwner(req, res, next){
-    if(req.session && req.session.userId){
-        UserModel.findById(req.session.userId)
-            .then(foundUser => {
-                if(!foundUser){
-                    res.status(404).send();
-                }
-
-                if(foundUser.userType && (foundUser.userType == "restaurantOwner" || foundUser.userType == "admin")){
-                    next();
-                } else {
-                    res.status(403).send();
-                }
-            })
-            .catch(err => {
-                res.status(404).send();
-            })
-    } else{
-        var err = new Error("You must be logged in to add restaurants");
-        err.status = 401;
-        return next(err);
+function checkOwnership(req, res, next){
+    try {
+        if(req.user.userType === "admin" || req.user.restaurants.includes(req.body.restaurantId)) {
+            next();
+        } else {
+            res.status(401).json({ error: "You must be the owner of this restaurant to edit it" });
+        }
+    } catch(error) {
+        res.status(500).json({ error: 'Server error' });
     }
 }
 
@@ -34,12 +23,12 @@ router.get('/', menuController.list);
 router.get('/:id', menuController.show);
 
 //POST
-router.post('/', mustBeRestaurantOwner, menuController.create);
+router.post('/', JWTAuthenticate, isRestaurantOwner, menuController.create);
 
 //PUT
-router.put('/:id', mustBeRestaurantOwner, menuController.update);
+router.put('/:id', JWTAuthenticate, isRestaurantOwner, menuController.update);
 
 //DELETE
-router.delete('/:id', mustBeRestaurantOwner, menuController.remove);
+router.delete('/:id', JWTAuthenticate, isRestaurantOwner, menuController.remove);
 
 module.exports = router;

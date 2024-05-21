@@ -6,42 +6,20 @@ var upload = multer({dest: 'public/images/'});
 var router = express.Router();
 var photoController = require('../controllers/photoController.js');
 
-var UserModel = require('../models/userModel.js');
-
-function requiresLogin(req, res, next){
-    if(req.session && req.session.userId){
-        return next();
-    } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
-        return next(err);
-    }
-}
+var JWTAuthenticate = require('../middleware/cookieJWTAuth');
 
 function checkOwnership(req, res, next){
-    if(req.session && req.session.userId) {
-        UserModel.findById(req.session.userId)
-        .then(foundUser => {
-            if(!foundUser){
-                res.status(404).send();
-            } else {
-                const ObjectId = require('mongoose').Types.ObjectId;
-                if ((foundUser.userType && foundUser.userType == "admin") || 
-                (foundUser.profilePhoto.equals(new ObjectId(req.params.id)))){
-                    next();
-                } else {
-                    res.status(403).send();
-                }
-            }
-        })
-        .catch(err => {
-            res.status(500).send();
-        });
-    }
-    else {
-        var err = new Error("You must be the owner of this profilePhoto to edit it");
-        err.status = 401;
-        return next(err);
+    console.log(req.user.userType)
+    console.log(typeof(req.user.profilePhoto))
+    console.log(typeof(req.params.id))
+    try {
+        if(req.user.userType === "admin" || req.user.profilePhoto === req.params.id) {
+            next();
+        } else {
+            res.status(401).json({ error: "You must be the owner of this restaurant to edit it" });
+        }
+    } catch(error) {
+        res.status(500).json({ error: 'Server error' });
     }
 }
 
@@ -50,12 +28,12 @@ router.get('/', photoController.list);
 router.get('/:id', photoController.show);
 
 //POST
-router.post('/', requiresLogin, upload.single('image') ,photoController.create);
+router.post('/', JWTAuthenticate, upload.single('image') ,photoController.create);
 
 //PUT
-router.put('/:id', checkOwnership, photoController.update);
+router.put('/:id', JWTAuthenticate, checkOwnership, photoController.update);
 
 //DELETE
-router.delete('/:id', checkOwnership, photoController.remove);
+router.delete('/:id', JWTAuthenticate, checkOwnership, photoController.remove);
 
 module.exports = router;

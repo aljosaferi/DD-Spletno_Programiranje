@@ -72,16 +72,25 @@ module.exports = {
 
         restaurant.save()
         .then(restaurant => {
-            const UserModel = mongoose.model('User');
+            var UserModel = require('../models/userModel.js');
     
-            UserModel.findByIdAndUpdate( req.session.userId, { $push: { restaurants: restaurant._id } })
+            UserModel.findByIdAndUpdate( req.user._id, { $push: { restaurants: restaurant._id } })
             .then(() => {
                 return res.status(201).json(restaurant)
             })
             .catch(err => {
-                return res.status(500).json({
-                    message: 'Error when adding restaurant to owner',
-                    error: err
+                RestaurantModel.findByIdAndRemove(restaurant._id)
+                .then(() => {
+                    return res.status(500).json({
+                        message: 'Error when adding restaurant to owner, restaurant deleted',
+                        error: err
+                    });
+                })
+                .catch(deleteErr => {
+                    return res.status(500).json({
+                        message: 'Error when adding restaurant to owner and deleting restaurant',
+                        error: deleteErr
+                    });
                 });
             });
         })
@@ -105,13 +114,13 @@ module.exports = {
                 });
             }
 
-            const ratingIndex = restaurant.ratings.findIndex(rating => rating.user.toString() === req.session.userId);
+            const ratingIndex = restaurant.ratings.findIndex(rating => rating.user.toString() === req.user._id);
 
             if (ratingIndex !== -1) {
                 restaurant.ratings[ratingIndex].score = Number(score);
             } else {
                 restaurant.ratings.push({
-                    user: req.session.userId,
+                    user: req.user._id,
                     score: Number(score)
                 });
             }

@@ -58,7 +58,7 @@ module.exports = {
 
         photo.save()
         .then(photo => {
-            UserModel.findByIdAndUpdate(req.session.userId, { profilePhoto: photo._id }, { new: true })
+            UserModel.findByIdAndUpdate(req.user._id, { profilePhoto: photo._id }, { new: true })
             .then(() => {
                 return res.status(201).json(photo);
             })
@@ -126,7 +126,7 @@ module.exports = {
                 });
             }
 
-            UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: "6644fd61d01c9038f1f3bf8e" }, { new: true })
+            UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: process.env.DEFAULT_AVATAR_ID }, { new: true })
             .then(() => {
                 return res.status(204).json();
             })

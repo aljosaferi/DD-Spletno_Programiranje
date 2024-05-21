@@ -23,7 +23,8 @@ var restaurantSchema = new Schema({
 			ref: 'tag',
 			required: true 
 		}],
-		required: true
+		required: true,
+		default : []
 	},
 	'coordinates' : Number,
 	'menus' : { 
@@ -32,37 +33,32 @@ var restaurantSchema = new Schema({
 			ref: 'menu',
 			required: true
 		}],
-		required: true 
+		required: true,
+		default : []
 	},
 	'ratings': {
 		type: [{
         	user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         	score: { type: Number, required: true, min: 1, max: 5 }
     	}],
-		required: true 
+		required: true,
+		default : [] 
 	}	
-});
-
-restaurantSchema.pre('save', function(next){
-	if (this.menus.length < 1) {
-		next(new Error('Menus must contain at least one entry'));
-	  } else if(this.tags.length < 1) {
-		next(new Error('Tags must contain at least one entry'))
-	  } else {
-		next();
-	  }
 });
 
 restaurantSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const restaurant = await this.model.findOne(this.getFilter());
-
 		if (restaurant) {
 			await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
-			await UserModel.updateMany(
-                { restaurants: restaurant._id }, 
-                { $pull: { restaurants: restaurant._id } }
-            );
+			try {
+				await UserModel.updateMany(
+                	{ restaurants: restaurant._id }, 
+                	{ $pull: { restaurants: restaurant._id } }
+            	);
+			} catch (err) {
+				console.log(err)
+			}
 		}
 		next()
 	} catch(error) {

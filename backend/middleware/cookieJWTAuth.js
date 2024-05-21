@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-exports.cookieJWTAuth = (req, res, next) => {
+function cookieJWTAuth(req, res, next){
     const token = req.cookies.token;
     if(!token) {
         return res.status(404).json({ "error": "No token provided" });
@@ -15,3 +15,5 @@ exports.cookieJWTAuth = (req, res, next) => {
         return res.status(403).json({ "error": "Invalid token" });
     }
 }
+
+module.exports = cookieJWTAuth;

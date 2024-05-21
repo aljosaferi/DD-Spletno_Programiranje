@@ -53,18 +53,40 @@ module.exports = {
     /**
      * userController.create()
      */
-    create: function (req, res) {
-        var user = new UserModel({
-			username : req.body.username,
-			firstName : req.body.firstName,
-			lastName : req.body.lastName,
-			email : req.body.email,
-			password : req.body.password,
-			profilePhoto : "6644fd61d01c9038f1f3bf8e",
-			userType : req.body.userType,
-            restaurants : req.body.restaurants
-        });
+    create: async function (req, res) {
+        if(req.body.userType === "admin") {
+            try {
+                const user = await UserModel.findById(req.user._id);
+                if(!user) {
+                    return res.status(404).json({
+                        message: 'User does not exist',
+                    });
+                }
+    
+                if(user.userType !== "admin") {
+                    return res.status(403).json({
+                        message: "Non-admin users are not allowed to create admin accounts",
+                    });
+                }
+            } catch(err) {
+                return res.status(500).json({
+                    message: 'Cannot create admin account',
+                    error: err
+                });
+            }
+        }
 
+        var user = new UserModel({
+            username : req.body.username,
+            firstName : req.body.firstName,
+            lastName : req.body.lastName,
+            email : req.body.email,
+            password : req.body.password,
+            profilePhoto : process.env.DEFAULT_AVATAR_ID,
+            userType : req.body.userType,
+            restaurants : req.body.restaurants,
+        });
+    
         user.save()
         .then(user => {
             return res.status(201).json(user);
@@ -129,6 +151,9 @@ module.exports = {
                     message: 'No such user'
                 });
             }
+            if(req.user._id === user._id) {
+                res.clearCookie('token');
+            }
             return res.status(204).json();
         })
         .catch(err => {
@@ -146,11 +171,11 @@ module.exports = {
                 err.status = 401;
                 return next(err);
             }
-            req.session.userId = user._id;
 
             const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET)
             res.cookie("token", token, {
                 httpOnly: true,
+                maxAge: 3600000 // 1 hour in milliseconds
               });
 
             return res.json(user);
@@ -158,14 +183,7 @@ module.exports = {
     },
 
     logout: function(req, res, next){
-        if(req.session){
-            req.session.destroy(function(err){
-                if(err){
-                    return next(err);
-                } else{
-                    return res.status(201).json({});
-                }
-            });
-        }
+        res.clearCookie('token');
+        return res.status(200).json({ message: 'Logged out successfully' });
     }
 };
