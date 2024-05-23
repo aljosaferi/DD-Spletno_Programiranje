@@ -106,6 +106,7 @@ module.exports = {
 			name : req.body.name,
 			address : req.body.address,
             owner : ownerId,
+            photo : process.env.DEFAULT_RESTAURANT_PHOTO_ID,
 			mealPrice : req.body.mealPrice,
 			mealSurcharge : req.body.mealSurcharge,
 			workingHours : req.body.workingHours,
@@ -196,7 +197,8 @@ module.exports = {
 
             restaurant.name = req.body.name ? req.body.name : restaurant.name;
 			restaurant.address = req.body.address ? req.body.address : restaurant.address;
-            restaurant.owner = ownerId
+            restaurant.owner = ownerId;
+            restaurant.photo = req.body.photo ? req.body.photo : restaurant.photo;
 			restaurant.mealPrice = req.body.mealPrice ? req.body.mealPrice : restaurant.mealPrice;
 			restaurant.mealSurcharge = req.body.mealSurcharge ? req.body.mealSurcharge : restaurant.mealSurcharge;
 			restaurant.workingHours = req.body.workingHours ? req.body.workingHours : restaurant.workingHours;

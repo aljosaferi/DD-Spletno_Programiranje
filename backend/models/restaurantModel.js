@@ -11,6 +11,11 @@ var restaurantSchema = new Schema({
 		ref: 'user',
 		required: true
 	},
+	'photo' : {
+		type: Schema.Types.ObjectId,
+		ref: 'photo',
+		required: true
+	},
 	'mealPrice' : { type: Number, required: true },
 	'mealSurcharge' : { type: Number, required: true },
 	'workingHours' : { 
@@ -72,6 +77,9 @@ restaurantSchema.pre('findOneAndDelete', async function(next) {
 	try {
 		const restaurant = await this.model.findOne(this.getFilter()).populate('menus');
 		if (restaurant) {
+			if (restaurant.photo.toString() !== process.env.DEFAULT_RESTAURANT_PHOTO_ID) {
+				await PhotoModel.findOneAndDelete({ _id: restaurant.photo });
+			}
 			await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
 		}
 		next()
