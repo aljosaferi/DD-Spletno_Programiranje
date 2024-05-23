@@ -6,43 +6,45 @@ var upload = multer({dest: 'public/images/'});
 var router = express.Router();
 var photoController = require('../controllers/photoController.js');
 
-var UserModel = require('../models/userModel.js');
+var JWTAuthenticate = require('../middleware/cookieJWTAuth');
+var isRestaurantOwner = require('../middleware/isRestaurantOwner');
 
-function requiresLogin(req, res, next){
-    if(req.session && req.session.userId){
-        return next();
-    } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
-        return next(err);
-    }
+var UserModel = require('../models/userModel')
+
+function checkPhotoOwnership(req, res, next){
+    UserModel.findOne({_id: req.user._id})
+    .then(user => {
+        if(!user) {
+            res.status(404).json({ error: 'No such user' });
+        }
+
+        if(req.user.userType === "admin" || user.profilePhoto.toString() === req.params.id) {
+            next();
+        } else {
+            res.status(401).json({ error: "You must be the owner of this photo to edit it" });
+        }
+    })
+    .catch(error => {
+        res.status(500).json({ error: 'Server error' });
+    });
 }
 
-function checkOwnership(req, res, next){
-    if(req.session && req.session.userId) {
-        UserModel.findById(req.session.userId)
-        .then(foundUser => {
-            if(!foundUser){
-                res.status(404).send();
-            } else {
-                const ObjectId = require('mongoose').Types.ObjectId;
-                if ((foundUser.userType && foundUser.userType == "admin") || 
-                (foundUser.profilePhoto.equals(new ObjectId(req.params.id)))){
-                    next();
-                } else {
-                    res.status(403).send();
-                }
-            }
-        })
-        .catch(err => {
-            res.status(500).send();
-        });
-    }
-    else {
-        var err = new Error("You must be the owner of this profilePhoto to edit it");
-        err.status = 401;
-        return next(err);
-    }
+function checkRestaurantOwnership(req, res, next){
+    UserModel.findOne({_id: req.user._id}).populate('restaurants')
+    .then(user => {
+        if(!user) {
+            res.status(404).json({ error: 'No such user' });
+        }
+
+        if(req.user.userType === "admin" || user.restaurants && user.restaurants.some(restaurant => restaurant._id.toString() === req.params.restaurantId)) {
+            next();
+        } else {
+            res.status(401).json({ error: "You must be the owner of this photo to edit it" });
+        }
+    })
+    .catch(error => {
+        res.status(500).json({ error: 'Server error' });
+    });
 }
 
 //GET
@@ -50,12 +52,14 @@ router.get('/', photoController.list);
 router.get('/:id', photoController.show);
 
 //POST
-router.post('/', requiresLogin, upload.single('image') ,photoController.create);
+router.post('/profilePhoto', JWTAuthenticate, upload.single('image'), photoController.createProfilePhoto);
+router.post('/restaurantPhoto/:restaurantId', JWTAuthenticate, isRestaurantOwner, checkRestaurantOwnership, upload.single('image'), photoController.createRestaurantPhoto);
 
 //PUT
-router.put('/:id', checkOwnership, photoController.update);
+router.put('/:id', JWTAuthenticate, checkPhotoOwnership, photoController.update);
 
 //DELETE
-router.delete('/:id', checkOwnership, photoController.remove);
+router.delete('/profilePhoto/:id', JWTAuthenticate, checkPhotoOwnership, photoController.removeProfilePhoto);
+router.delete('/restaurantPhoto/:restaurantId/:id', JWTAuthenticate, isRestaurantOwner, checkRestaurantOwnership, photoController.removeRestaurantPhoto);
 
 module.exports = router;

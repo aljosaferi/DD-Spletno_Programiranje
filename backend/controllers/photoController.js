@@ -1,5 +1,6 @@
 var PhotoModel = require('../models/photoModel.js');
 var UserModel = require('../models/userModel.js');
+var RestaurantModel = require('../models/restaurantModel.js');
 
 /**
  * photoController.js
@@ -51,30 +52,52 @@ module.exports = {
     /**
      * photoController.create()
      */
-    create: function (req, res) {
-        var photo = new PhotoModel({
-			imagePath : "/images/" + req.file.filename
-        });
+    createProfilePhoto: async function (req, res) {
+        try {
+            var newPhoto = new PhotoModel({
+                imagePath : "/images/" + req.file.filename
+            });
 
-        photo.save()
-        .then(photo => {
-            UserModel.findByIdAndUpdate(req.session.userId, { profilePhoto: photo._id }, { new: true })
-            .then(() => {
-                return res.status(201).json(photo);
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    message: "Error when updating user's profile photo",
-                    error: err
-                });
-            });
-        })
-        .catch(err => {
+            newPhoto = await newPhoto.save();
+
+            const user = await UserModel.findOne({_id: req.user._id});
+
+            if(user.profilePhoto.toString() !== process.env.DEFAULT_AVATAR_ID) {
+                const oldPhoto = await PhotoModel.findOneAndDelete({_id: user.profilePhoto._id});
+            }
+            user.profilePhoto = newPhoto._id;
+            await user.save();
+            res.status(200).json(newPhoto);
+        } catch (err) {
             return res.status(500).json({
-               message: 'Error when creating photo',
-               error: err
+                message: 'Error when creating photo',
+                error: err
             });
-        });
+        }
+    },
+
+    createRestaurantPhoto: async function (req, res) {
+        try {
+            var newPhoto = new PhotoModel({
+                imagePath : "/images/" + req.file.filename
+            });
+
+            newPhoto = await newPhoto.save();
+
+            const restaurant = await RestaurantModel.findOne({_id: req.params.restaurantId});
+
+            if(restaurant.photo.toString() !== process.env.DEFAULT_RESTAURANT_PHOTO_ID) {
+                const oldPhoto = await PhotoModel.findOneAndDelete({_id: restaurant.photo});
+            }
+            restaurant.photo = newPhoto._id;
+            await restaurant.save();
+            res.status(200).json(newPhoto);
+        } catch (err) {
+            return res.status(500).json({
+                message: 'Error when creating photo',
+                error: err
+            });
+        }
     },
 
     /**
@@ -115,33 +138,66 @@ module.exports = {
     /**
      * photoController.remove()
      */
-    remove: function (req, res) {
+    removeProfilePhoto: function (req, res) {
         var id = req.params.id;
 
-        PhotoModel.findOneAndDelete({ _id: id })
-        .then(photo => {
-            if (!photo) {
-                return res.status(404).json({
-                    message: 'No such photo'
+        if(id !== process.env.DEFAULT_AVATAR_ID && id !== process.env.DEFAULT_RESTAURANT_PHOTO_ID) {
+            PhotoModel.findOneAndDelete({ _id: id })
+            .then(photo => {
+                if (!photo) {
+                    return res.status(404).json({
+                        message: 'No such photo'
+                    });
+                }
+                UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: process.env.DEFAULT_AVATAR_ID }, { new: true })
+                .then(() => {
+                    return res.status(204).json();
+                })
+                .catch(err => {
+                    return res.status(500).json({
+                        message: "Error when updating user's profile photo after deletion",
+                        error: err
+                    });
                 });
-            }
-
-            UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: "6644fd61d01c9038f1f3bf8e" }, { new: true })
-            .then(() => {
-                return res.status(204).json();
             })
             .catch(err => {
                 return res.status(500).json({
-                    message: "Error when updating user's profile photo after deletion",
+                    message: 'Error when deleting the photo.',
                     error: err
                 });
-            });
-        })
-        .catch(err => {
-            return res.status(500).json({
-                message: 'Error when deleting the photo.',
-                error: err
-            });
-        })
+            })
+        }
+    },
+
+    removeRestaurantPhoto: function (req, res) {
+        var id = req.params.id;
+
+        if(id !== process.env.DEFAULT_AVATAR_ID && id !== process.env.DEFAULT_RESTAURANT_PHOTO_ID) {
+            PhotoModel.findOneAndDelete({ _id: id })
+            .then(photo => {
+                if (!photo) {
+                    return res.status(404).json({
+                        message: 'No such photo'
+                    });
+                }
+
+                RestaurantModel.findOneAndUpdate({ photo: id }, { photo: process.env.DEFAULT_RESTAURANT_PHOTO_ID }, { new: true })
+                .then(() => {
+                    return res.status(204).json();
+                })
+                .catch(err => {
+                    return res.status(500).json({
+                        message: "Error when updating restaurants's photo after deletion",
+                        error: err
+                    });
+                });
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    message: 'Error when deleting the photo.',
+                    error: err
+                });
+            })
+        }
     }
 };

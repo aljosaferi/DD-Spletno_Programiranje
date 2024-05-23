@@ -56,6 +56,7 @@ module.exports = {
         var menu = new MenuModel({
 			dish : req.body.dish,
 			sideDishes : req.body.sideDishes,
+            restaurant : req.body.restaurantId,
 			tag : req.body.tag
         });
 
@@ -121,6 +122,7 @@ module.exports = {
                     message: 'No such menu'
                 });
             }
+
             return res.status(204).json();
         })
         .catch(err => {
