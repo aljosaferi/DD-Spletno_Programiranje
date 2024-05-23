@@ -1,6 +1,4 @@
 var MenuModel = require('../models/menuModel.js');
-var RestaurantModel = require('../models/restaurantModel');
-
 
 /**
  * menuController.js
@@ -58,21 +56,13 @@ module.exports = {
         var menu = new MenuModel({
 			dish : req.body.dish,
 			sideDishes : req.body.sideDishes,
+            restaurant : req.body.restaurantId,
 			tag : req.body.tag
         });
 
         menu.save()
         .then(menu => {
-            RestaurantModel.findByIdAndUpdate(req.body.restaurantId, { $push: { menus: menu._id } }, { new: true })
-            .then(restaurant => {
-                return res.status(201).json(menu);
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    message: 'Error when updating restaurant',
-                    error: err
-                });
-            });
+            return res.status(201).json(menu);
         })
         .catch(err => {
             return res.status(500).json({
@@ -133,16 +123,7 @@ module.exports = {
                 });
             }
 
-            RestaurantModel.updateOne({ menus: id }, { $pull: { menus: id } })
-            .then(() => {
-                return res.status(204).json();
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    message: 'Error when updating restaurant',
-                    error: err
-                });
-            });
+            return res.status(204).json();
         })
         .catch(err => {
             return res.status(500).json({

@@ -2,11 +2,15 @@ var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 
 const MenuModel = require('./menuModel');
-const UserModel = require('./userModel');
 
 var restaurantSchema = new Schema({
 	'name' : { type: String, required: true },
 	'address' : { type: String, required: true },
+	'owner' : {
+		type: Schema.Types.ObjectId,
+		ref: 'user',
+		required: true
+	},
 	'mealPrice' : { type: Number, required: true },
 	'mealSurcharge' : { type: Number, required: true },
 	'workingHours' : { 
@@ -26,16 +30,10 @@ var restaurantSchema = new Schema({
 		required: true,
 		default : []
 	},
-	'coordinates' : Number,
-	'menus' : { 
-		type: [{ 
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'menu',
-			required: true
-		}],
-		required: true,
-		default : []
-	},
+	'location' : {
+        type: {type: String, required: true, default: "Point"},
+        coordinates: {type: [Number], required: true, index: "2dsphere"}
+    },
 	'ratings': {
 		type: [{
         	user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
@@ -43,28 +41,44 @@ var restaurantSchema = new Schema({
     	}],
 		required: true,
 		default : [] 
-	}	
+	},
+},
+{ 
+	toJSON: { virtuals: true },
+	toObject: { virtuals: true }
+});
+
+restaurantSchema.virtual('menus', {
+	ref: 'menu',
+	localField: '_id',
+	foreignField: 'restaurant'
+})
+
+restaurantSchema.virtual('averageRating').get(function() {
+    if (this.ratings.length === 0) {
+        return 0;
+    }
+    
+    var avgScore = 0;
+    for(let rating of this.ratings) {
+        avgScore += rating.score;
+    }
+    avgScore /= this.ratings.length;
+    avgScore = Math.round(avgScore * 10) / 10; // Round to one decimal place
+    return avgScore;
 });
 
 restaurantSchema.pre('findOneAndDelete', async function(next) {
 	try {
-		const restaurant = await this.model.findOne(this.getFilter());
+		const restaurant = await this.model.findOne(this.getFilter()).populate('menus');
 		if (restaurant) {
 			await MenuModel.deleteMany({ _id: { $in: restaurant.menus } });
-			try {
-				await UserModel.updateMany(
-                	{ restaurants: restaurant._id }, 
-                	{ $pull: { restaurants: restaurant._id } }
-            	);
-			} catch (err) {
-				console.log(err)
-			}
 		}
 		next()
 	} catch(error) {
 		next(error)
 	}
 	
-  });
+});
 
 module.exports = mongoose.model('restaurant', restaurantSchema);

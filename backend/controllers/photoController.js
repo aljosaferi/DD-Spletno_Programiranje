@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 var PhotoModel = require('../models/photoModel.js');
 var UserModel = require('../models/userModel.js');
 
@@ -51,30 +54,35 @@ module.exports = {
     /**
      * photoController.create()
      */
-    create: function (req, res) {
-        var photo = new PhotoModel({
-			imagePath : "/images/" + req.file.filename
-        });
+    create: async function (req, res) {
+        try {
 
-        photo.save()
-        .then(photo => {
-            UserModel.findByIdAndUpdate(req.user._id, { profilePhoto: photo._id }, { new: true })
-            .then(() => {
-                return res.status(201).json(photo);
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    message: "Error when updating user's profile photo",
-                    error: err
+            var newPhoto = new PhotoModel({
+                imagePath : "/images/" + req.file.filename
+            });
+
+            newPhoto = await newPhoto.save();
+
+            const user = await UserModel.findOne({_id: req.user._id});
+
+            if(user.profilePhoto.toString() !== process.env.DEFAULT_AVATAR_ID) {
+                const oldPhoto = await PhotoModel.findOneAndDelete({_id: user.profilePhoto._id});
+
+                fs.unlink(path.join(__dirname, '..', 'public', oldPhoto.imagePath), err => {
+                    if (err) {
+                        console.error('Error when deleting the photo file:', err);
+                    }
                 });
-            });
-        })
-        .catch(err => {
+            }
+            user.profilePhoto = newPhoto._id;
+            await user.save();
+            res.status(200).json(newPhoto);
+        } catch (err) {
             return res.status(500).json({
-               message: 'Error when creating photo',
-               error: err
+                message: 'Error when creating photo',
+                error: err
             });
-        });
+        }
     },
 
     /**
@@ -118,30 +126,38 @@ module.exports = {
     remove: function (req, res) {
         var id = req.params.id;
 
-        PhotoModel.findOneAndDelete({ _id: id })
-        .then(photo => {
-            if (!photo) {
-                return res.status(404).json({
-                    message: 'No such photo'
-                });
-            }
+        if(id !== process.env.DEFAULT_AVATAR_ID) {
+            PhotoModel.findOneAndDelete({ _id: id })
+            .then(photo => {
+                if (!photo) {
+                    return res.status(404).json({
+                        message: 'No such photo'
+                    });
+                }
 
-            UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: process.env.DEFAULT_AVATAR_ID }, { new: true })
-            .then(() => {
-                return res.status(204).json();
+                fs.unlink(path.join(__dirname, '..', 'public', photo.imagePath), err => {
+                    if (err) {
+                        console.error('Error when deleting the photo file:', err);
+                    }
+                });
+
+                UserModel.findOneAndUpdate({ profilePhoto: id }, { profilePhoto: process.env.DEFAULT_AVATAR_ID }, { new: true })
+                .then(() => {
+                    return res.status(204).json();
+                })
+                .catch(err => {
+                    return res.status(500).json({
+                        message: "Error when updating user's profile photo after deletion",
+                        error: err
+                    });
+                });
             })
             .catch(err => {
                 return res.status(500).json({
-                    message: "Error when updating user's profile photo after deletion",
+                    message: 'Error when deleting the photo.',
                     error: err
                 });
-            });
-        })
-        .catch(err => {
-            return res.status(500).json({
-                message: 'Error when deleting the photo.',
-                error: err
-            });
-        })
+            })
+        }
     }
 };

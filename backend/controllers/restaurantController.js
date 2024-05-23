@@ -11,14 +11,26 @@ module.exports = {
      * restaurantController.list()
      */
     list: function (req, res) {
-        RestaurantModel.find()
+        var filter = {};
+        var sort = {};
+        if(req.query.name) {
+            filter.name = { $regex: req.query.name };
+        }
+        if(req.query.sortBy) {
+            if(req.query.sortBy === 'lowest-price-first') {
+                sort.mealSurcharge = 1;
+            } else if (req.query.sortBy === 'highest-price-first') {
+                sort.mealSurcharge = -1;
+            } else if (req.query.sortBy === 'lowest-rated-first') {
+                sort.rating = 1;
+            } else if (req.query.sortBy === 'highest-rated-first') {
+                sort.rating = -1;
+            }
+        }
+        RestaurantModel.find(filter)
+        .sort(sort)
         .populate('tags')
         .then(restaurants => {
-            if(req.query.sortBy) {
-                if(req.query.sortBy === 'lowest-price-first') {
-                    restaurants.sort((a, b) => a.mealSurcharge - b.mealSurcharge);
-                }
-            }
             return res.json(restaurants);
         }).catch(err => {
             return res.status(500).json({
@@ -57,42 +69,52 @@ module.exports = {
     /**
      * restaurantController.create()
      */
-    create: function (req, res) {
+    create: async function (req, res) {
+        var coords;
+        if(!req.body.coordinates) {
+            var requestOptions = {
+                method: 'GET',
+            };
+              
+            var response = await fetch("https://api.geoapify.com/v1/geocode/search?text=" + req.body.address + "&apiKey=" + process.env.GEOCODING_API_KEY, requestOptions)
+            var data = await response.json()
+            
+            const restaurantNameWords = req.body.name.toLowerCase().split(' ');
+            var bestMatch = data.features[0];
+            var bestMatchScore = 0;
+
+            for(i in data.features) {
+                if (!data.features[i].properties.name) continue;
+                var featureName = data.features[i].properties.name.toLowerCase();
+                var score = restaurantNameWords.reduce((acc, word) => acc + (featureName.includes(word) ? 1 : 0), 0);
+                if(score > bestMatchScore) {
+                    bestMatch = data.features[i];
+                    bestMatchScore = score;
+                }
+            }
+            coords = bestMatch.geometry
+        } else {
+            coords = req.body.coordinates;
+        }
+
+        var ownerId = req.user._id;
+        if(req.body.owner && req.user.userType === 'admin') {
+            ownerId = req.body.owner;
+        }
+
         var restaurant = new RestaurantModel({
 			name : req.body.name,
 			address : req.body.address,
+            owner : ownerId,
 			mealPrice : req.body.mealPrice,
 			mealSurcharge : req.body.mealSurcharge,
 			workingHours : req.body.workingHours,
-			tags : req.body.tags,
-			coordinates : req.body.coordinates,
-			menus : req.body.menus,
-            ratings : req.body.ratings
+			location : coords,
         });
 
         restaurant.save()
         .then(restaurant => {
-            var UserModel = require('../models/userModel.js');
-    
-            UserModel.findByIdAndUpdate( req.user._id, { $push: { restaurants: restaurant._id } })
-            .then(() => {
-                return res.status(201).json(restaurant)
-            })
-            .catch(err => {
-                RestaurantModel.findByIdAndRemove(restaurant._id)
-                .then(() => {
-                    return res.status(500).json({
-                        message: 'Error when adding restaurant to owner, restaurant deleted',
-                        error: err
-                    });
-                })
-                .catch(deleteErr => {
-                    return res.status(500).json({
-                        message: 'Error when adding restaurant to owner and deleting restaurant',
-                        error: deleteErr
-                    });
-                });
-            });
+            return res.status(201).json(restaurant)
         })
         .catch(err => {
             return res.status(500).json({
@@ -150,6 +172,11 @@ module.exports = {
     update: function (req, res) {
         var id = req.params.id;
 
+        var ownerId = req.user._id;
+        if(req.body.owner && req.user.userType === 'admin') {
+            ownerId = req.body.owner;
+        }
+
         RestaurantModel.findOne({_id: id})
         .then(restaurant => {
             if (!restaurant) {
@@ -158,14 +185,22 @@ module.exports = {
                 });
             }
 
+            var coords = restaurant.coords;
+            if(req.body.address !== restaurant.address) {
+                if(!req.body.coordinates) {
+                    //Poišči koordinate
+                } else {
+                    coords = req.body.coordinates;
+                }
+            }
+
             restaurant.name = req.body.name ? req.body.name : restaurant.name;
 			restaurant.address = req.body.address ? req.body.address : restaurant.address;
+            restaurant.owner = ownerId
 			restaurant.mealPrice = req.body.mealPrice ? req.body.mealPrice : restaurant.mealPrice;
 			restaurant.mealSurcharge = req.body.mealSurcharge ? req.body.mealSurcharge : restaurant.mealSurcharge;
 			restaurant.workingHours = req.body.workingHours ? req.body.workingHours : restaurant.workingHours;
-			restaurant.tags = req.body.tags ? req.body.tags : restaurant.tags;
-			restaurant.coordinates = req.body.coordinates ? req.body.coordinates : restaurant.coordinates;
-			restaurant.menus = req.body.menus ? req.body.menus : restaurant.menus;
+			restaurant.coordinates = coords;
 			
             restaurant.save()
             .then(restaurant => {

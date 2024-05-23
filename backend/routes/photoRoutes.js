@@ -8,19 +8,24 @@ var photoController = require('../controllers/photoController.js');
 
 var JWTAuthenticate = require('../middleware/cookieJWTAuth');
 
+var UserModel = require('../models/userModel')
+
 function checkOwnership(req, res, next){
-    console.log(req.user.userType)
-    console.log(typeof(req.user.profilePhoto))
-    console.log(typeof(req.params.id))
-    try {
-        if(req.user.userType === "admin" || req.user.profilePhoto === req.params.id) {
+    UserModel.findOne({_id: req.user._id})
+    .then(user => {
+        if(!user) {
+            res.status(404).json({ error: 'No such user' });
+        }
+
+        if(req.user.userType === "admin" || user.profilePhoto === req.params.id) {
             next();
         } else {
-            res.status(401).json({ error: "You must be the owner of this restaurant to edit it" });
+            res.status(401).json({ error: "You must be the owner of this photo to edit it" });
         }
-    } catch(error) {
+    })
+    .catch(error => {
         res.status(500).json({ error: 'Server error' });
-    }
+    });
 }
 
 //GET

@@ -5,23 +5,25 @@ var restaurantController = require('../controllers/restaurantController.js');
 var JWTAuthenticate = require('../middleware/cookieJWTAuth');
 var isRestaurantOwner = require('../middleware/isRestaurantOwner');
 
+var UserModel = require('../models/userModel')
+
 function checkOwnership(req, res, next){
-    try {
-        console.log(req.user)
-        console.log(req.user.userType)
-        console.log(req.user.restaurants)
-        console.log(req.user.restaurants[0])
-        console.log(typeof(req.user.restaurants[0]))
-        console.log(req.params.id)
-        console.log(typeof(req.params.id))
-        if(req.user.userType === "admin" || req.user.restaurants.includes(req.params.id)) {
+    UserModel.findOne({_id: req.user._id})
+    .populate('restaurants')
+    .then(user => {
+        if(!user) {
+            res.status(404).json({ error: 'No such user' });
+        }
+
+        if(req.user.userType === "admin" || (user.restaurants && user.restaurants.some(restaurant => restaurant._id.toString() === req.params.id))) {
             next();
         } else {
             res.status(401).json({ error: "You must be the owner of this restaurant to edit it" });
         }
-    } catch(error) {
+    })
+    .catch(error => {
         res.status(500).json({ error: 'Server error' });
-    }
+    });
 }
 
 //GET

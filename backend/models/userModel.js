@@ -5,37 +5,37 @@ var bcrypt = require('bcrypt');
 const PhotoModel = require('./photoModel');
 const RestaurantModel = require('./restaurantModel');
 
-var userSchema = new Schema({
-	'username' : { type: String, required: true },
-	'firstName' : { type: String, required: true },
-	'lastName' : { type: String, required: true },
-	'email' : { type: String, required: true },
-	'password' : { type: String, required: true },
-	'profilePhoto' : {
-	 	type: Schema.Types.ObjectId,
-	 	ref: 'photo',
-		required: true
-	},
-	'userType' : { 
-		type: String, 
-		enum: ['regular', 'admin', 'restaurantOwner'], 
-		required: true 
-	},
-	'restaurants': {
-		type: [{ 
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'restaurant',
+var userSchema = new Schema(
+	{
+		'username' : { type: String, required: true },
+		'firstName' : { type: String, required: true },
+		'lastName' : { type: String, required: true },
+		'email' : { type: String, required: true },
+		'password' : { type: String, required: true },
+		'profilePhoto' : {
+			type: Schema.Types.ObjectId,
+			ref: 'photo',
 			required: true
-		}],
-		required: function() { return this.userType === 'restaurantOwner'; },
-		default: function() { return this.userType === 'restaurantOwner' ? [] : undefined; }
+		},
+		'userType' : { 
+			type: String, 
+			enum: ['regular', 'admin', 'restaurantOwner'], 
+			required: true 
+		},
+	},
+	{ 
+		toJSON: { virtuals: true },
+		toObject: { virtuals: true }
 	}
-});
+);
 
-userSchema.pre('save', function(next){
-	if (this.userType !== 'restaurantOwner' && this.restaurants) {
-		next(new Error('Only restaurant owners can have owned restaurants.'));
-	}
+userSchema.virtual('restaurants', {
+	ref: 'restaurant',
+	localField: '_id',
+	foreignField: 'owner'
+})
+
+userSchema.pre('save', function(next) {
 	var user = this;
 	bcrypt.hash(user.password, 10, function(err, hash){
 		if(err){
@@ -48,22 +48,21 @@ userSchema.pre('save', function(next){
 
 userSchema.pre('findOneAndDelete', async function(next) {
 	try {
-		const user = await this.model.findOne(this.getFilter());
+		const user = await this.model.findOne(this.getFilter()).populate('restaurants');
+
 		if(user) {
-			if (user.profilePhoto && user.profilePhoto.toString() !== process.env.DEFAULT_AVATAR_ID) {
-				console.log(2)
+			if (user.profilePhoto.toString() !== process.env.DEFAULT_AVATAR_ID) {
 				await PhotoModel.findOneAndDelete({ _id: user.profilePhoto });
 			}
 			await RestaurantModel.updateMany(
 				{}, 
 				{ $pull: { ratings: { user: user._id } } }
 			);
-			if(user.userType && user.userType === "restaurantOwner") {
+			if(user.userType === "restaurantOwner") {
 				for (let restaurantId of user.restaurants) {
 					await RestaurantModel.findOneAndDelete({_id: restaurantId})
 				}
 			}
-			console.log(6)
 		}
 		next()
 	} catch(error) {

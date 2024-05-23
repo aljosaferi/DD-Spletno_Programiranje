@@ -12,7 +12,8 @@ module.exports = {
      * userController.list()
      */
     list: function (req, res) {
-        UserModel.find().select('-password')
+        UserModel.find()
+        .select('-password')
         .populate('profilePhoto')
         .then(users => {
             return res.json(users);
@@ -31,23 +32,27 @@ module.exports = {
     show: function (req, res) {
         var id = req.params.id;
     
-        UserModel.findOne({_id: id}).select('-password')
+        UserModel.findOne({_id: id})
+        .select('-password')
         .populate('profilePhoto')
-        .populate('restaurants')
-            .then(user => {
-                if (!user) {
-                    return res.status(404).json({
-                        message: 'No such user'
-                    });
-                }
-                return res.json(user);
-            })
-            .catch(err => {
-                return res.status(500).json({
-                    message: 'Error when getting user.',
-                    error: err
+        .populate({
+            path: 'restaurants',
+            populate: { path: 'menus' }
+        })
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({
+                    message: 'No such user'
                 });
+            }
+            return res.json(user);
+        })
+        .catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting user.',
+                error: err
             });
+        });
     },
 
     /**
@@ -84,7 +89,6 @@ module.exports = {
             password : req.body.password,
             profilePhoto : process.env.DEFAULT_AVATAR_ID,
             userType : req.body.userType,
-            restaurants : req.body.restaurants,
         });
     
         user.save()
@@ -143,7 +147,6 @@ module.exports = {
      */
     remove: function (req, res) {
         var id = req.params.id;
-
         UserModel.findOneAndDelete({ _id: id })
         .then(user => {
             if (!user) {
@@ -172,7 +175,7 @@ module.exports = {
                 return next(err);
             }
 
-            const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET)
+            const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, { expiresIn: '1h' })
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: 3600000 // 1 hour in milliseconds
