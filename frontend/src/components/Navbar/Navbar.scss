@@ -1,0 +1,70 @@
+@import '../../variables';
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+
+    /* background-color: $blue-third; */
+    border-bottom: 1px solid lightgray;
+
+    padding: 0 1rem;
+
+    > * {
+        flex: 1;
+    }
+}
+
+.logo-link {
+    display: flex;
+    flex: auto; 
+    
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo-image {
+        height: 2.6rem;
+    }
+    
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    
+        margin-left: 0.2rem;
+    }
+}
+
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+
+    .nav-text {
+        margin-left: 0.2rem;
+    }
+}
+
+.nav-buttons li {
+    padding: 1.2em;
+
+    &:hover {
+        color: $blue-third;
+    }
+
+    &:active {
+        color: $blue-third-active;
+    }
+}
+
+.active-link {
+    color: $blue-third;
+    border-bottom: 2px solid $blue-third;
+}
+
+
+.user {
+    display: flex;
+    justify-content: end;
+}

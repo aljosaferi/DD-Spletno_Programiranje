@@ -1,4 +1,30 @@
+@import './resets';
+@import './variables';
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-  margin: 0;
-  padding: 0;
+    background-color: $background-color;
+}
+
+@font-face {
+    font-family: 'Soliden';
+    src: url('../public/fonts/SolidenTrial-BoldExpanded.ttf');
+}
+
+@font-face {
+    font-family: 'Mona Sans';
+    src: url('../public/fonts/Mona-Sans-Regular.otf');
+}
+
+h1 {
+    font-size: 1.2rem;
+    font-family: 'Soliden';
+}
+
+h2 {
+    font-size: 1rem;
+    font-family: 'Mona Sans';
 }
