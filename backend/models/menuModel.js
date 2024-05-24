@@ -10,11 +10,20 @@ var menuSchema = new Schema({
 		}],
 		required: true
 	},
+	'restaurant' : {
+		type: Schema.Types.ObjectId,
+		ref: 'restaurant',
+		required: true
+	},
 	'tag' : {
 		type: Schema.Types.ObjectId,
 		ref: 'tag',
 	   	required: true
    },
+},
+{ 
+	toJSON: { virtuals: true },
+	toObject: { virtuals: true }
 });
 
 module.exports = mongoose.model('menu', menuSchema);
