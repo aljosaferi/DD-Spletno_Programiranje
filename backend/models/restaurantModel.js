@@ -37,7 +37,7 @@ var restaurantSchema = new Schema({
 	},
 	'location' : {
         type: {type: String, required: true, default: "Point"},
-        coordinates: {type: [Number], required: true, index: "2dsphere"}
+        coordinates: {type: [Number], required: true },
     },
 	'ratings': {
 		type: [{
@@ -52,6 +52,8 @@ var restaurantSchema = new Schema({
 	toJSON: { virtuals: true },
 	toObject: { virtuals: true }
 });
+
+restaurantSchema.index({ location: '2dsphere' });
 
 restaurantSchema.virtual('menus', {
 	ref: 'menu',

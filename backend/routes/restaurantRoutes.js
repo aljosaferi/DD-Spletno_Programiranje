@@ -28,6 +28,7 @@ function checkOwnership(req, res, next){
 
 //GET
 router.get('/', restaurantController.list);
+router.get('/near', restaurantController.listNear);
 router.get('/:id', restaurantController.show);
 
 //POST
