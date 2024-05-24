@@ -40,6 +40,39 @@ module.exports = {
         });
     },
 
+    listNear: function (req, res) {
+        //Maribor -> [Longtitude, Latitude]
+        var coords = [15.645886, 46.554628];
+        if(req.query.lon, req.query.lat) {
+            coords = [req.query.lon, req.query.lat];
+        }
+        var maxDistance = 100000;
+        if(req.query.distance) {
+            maxDistance = req.query.distance
+        }
+        var filter = {
+            location: {
+              $near: {
+                $geometry: {
+                   type: "Point" ,
+                   coordinates: coords
+                },
+                $maxDistance: maxDistance
+              }
+            }
+         }
+        RestaurantModel.find(filter)
+        .populate('tags')
+        .then(restaurants => {
+            return res.json(restaurants);
+        }).catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting restaurants.',
+                error: err
+            });
+        });
+    },
+
     /**
      * restaurantController.show()
      */
