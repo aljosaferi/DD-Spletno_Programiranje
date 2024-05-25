@@ -1,14 +1,6 @@
 @import './resets';
 @import './variables';
 
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    background-color: $background-color;
-}
-
 @font-face {
     font-family: 'Soliden';
     src: url('../public/fonts/SolidenTrial-BoldExpanded.ttf');
@@ -19,12 +11,19 @@ body {
     src: url('../public/fonts/Mona-Sans-Regular.otf');
 }
 
+body {
+    background-color: $background-color-primary;
+    font-family: 'Mona Sans';
+}
+
 h1 {
+    color: $color-secondary;
     font-size: 1.2rem;
     font-family: 'Soliden';
 }
 
 h2 {
+    color: $color-secondary;
+    font-weight: normal;
     font-size: 1rem;
-    font-family: 'Mona Sans';
 }

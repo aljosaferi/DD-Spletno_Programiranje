@@ -11,6 +11,9 @@ function App() {
         <Navbar />
         <Routes>
           <Route path='/' element />
+          <Route path='/restaurants' element />
+          <Route path='/map' element />
+          <Route path='/login' element />
         </Routes>
       </Router>
     </>
