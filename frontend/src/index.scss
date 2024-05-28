@@ -27,3 +27,19 @@ h2 {
     font-weight: normal;
     font-size: 1rem;
 }
+
+.leaflet-bottom.leaflet-right {
+    display: none;
+}
+
+.leaflet-touch .leaflet-bar a {
+    background-color: $blue-second;
+    color: $color-secondary;
+    
+    &:hover {
+        background-color: $blue-second-hover;
+    }
+    &:active {
+        background-color: $blue-second-active;
+    }
+}
