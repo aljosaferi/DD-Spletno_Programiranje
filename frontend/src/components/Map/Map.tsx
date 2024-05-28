@@ -1,15 +1,81 @@
 import React, { useState, useEffect, useRef } from 'react';
-import L from 'leaflet';
+import L, { MarkerCluster, point } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
 import styles from './Map.module.scss';
+import { Icon, divIcon } from 'leaflet';
+
+import 'leaflet.markercluster';
 
 function Map() {
+  const markers = [
+    {
+      geocode: [46.5580553, 15.6408956],
+      name: 'Zlati lev',
+    },
+    {
+      geocode: [46.561465150000004, 15.634077258427485],
+      name: 'Baščaršija',
+    },
+    {
+      geocode: [46.5578877, 15.6465533],
+      name: 'Papagayo Cocktail Bar & C H O C O',
+    },
+    {
+      geocode: [46.5592431, 15.6473367],
+      name: 'Pizzeria in restavracija Ancora',
+    },
+    {
+      geocode: [46.5544983, 15.6525403],
+      name: "Chuty's Maribor Europark",
+    }
+  ]
+
+  const customIcon = new Icon({
+    iconUrl: require("./marker.png"),
+    iconSize: [38, 38]
+  })
+
+  const createCustomClusterIcon = (cluster: any) => {
+    const count = cluster.getChildCount();
+  
+    return L.divIcon({
+      html: `<div class="${styles['custom-cluster']}">${count}</div>`,
+      className: styles['marker-cluster'],
+      iconSize: L.point(40, 40),
+    });
+  };
+
+  
   const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) {
-      const map = L.map('map').setView([46.554628, 15.645886], 14);
+      const map = L.map('map', {
+        center: [46.554628, 15.645886],
+        zoom: 14,
+        maxZoom: 22,
+      });
       mapRef.current = map;
+      
+      const markerCluster = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        iconCreateFunction: createCustomClusterIcon
+      });
+
+      markers.forEach(marker => {
+        const markerInstance =  L.marker(marker.geocode as L.LatLngTuple, { icon: customIcon })
+        .addTo(markerCluster)
+        .bindPopup(marker.name)
+      });
+
+      /* markers.map(marker => (
+        L.marker(marker.geocode as L.LatLngTuple, { icon: customIcon })
+          .addTo(markerCluster)
+          .bindPopup(marker.name)
+      )) */
+
+      map.addLayer(markerCluster);
 
       L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
         attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
