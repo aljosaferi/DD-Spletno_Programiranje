@@ -7,30 +7,9 @@ import { Icon, divIcon } from 'leaflet';
 
 import * as L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
+import Button from '../Button/Button';
 
 function Map() {
-  const markers = [
-    {
-      geocode: [46.5580553, 15.6408956],
-      name: 'Zlati lev',
-    },
-    {
-      geocode: [46.561465150000004, 15.634077258427485],
-      name: 'Baščaršija',
-    },
-    {
-      geocode: [46.5578877, 15.6465533],
-      name: 'Papagayo Cocktail Bar & C H O C O',
-    },
-    {
-      geocode: [46.5592431, 15.6473367],
-      name: 'Pizzeria in restavracija Ancora',
-    },
-    {
-      geocode: [46.5544983, 15.6525403],
-      name: "Chuty's Maribor Europark",
-    }
-  ]
 
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
@@ -49,6 +28,8 @@ function Map() {
 
   
   const mapRef = useRef<L.Map | null>(null);
+  const markerClusterReference = useRef<any>(null);
+  const allMarkerListReference = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -58,25 +39,6 @@ function Map() {
         maxZoom: 22,
       });
       mapRef.current = map;
-      
-      const markerCluster = new window.L.MarkerClusterGroup({
-        showCoverageOnHover: false,
-        iconCreateFunction: createCustomClusterIcon
-      });
-
-      markers.forEach(marker => {
-        const markerInstance =  L.marker(marker.geocode as L.LatLngTuple, { icon: customIcon })
-        .addTo(markerCluster)
-        .bindPopup(marker.name)
-      });
-
-      /* markers.map(marker => (
-        L.marker(marker.geocode as L.LatLngTuple, { icon: customIcon })
-          .addTo(markerCluster)
-          .bindPopup(marker.name)
-      )) */
-
-      map.addLayer(markerCluster);
 
       L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
         attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -86,8 +48,7 @@ function Map() {
       }).addTo(map);
     }
 
-    
-
+  
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -132,31 +93,191 @@ function Map() {
   }
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [markerList, setMarkerList] = useState<{name: string, marker: L.Marker}[]>([]);
+  const markerListReference = useRef<{name: string, marker: L.Marker}[]>([]);
+
 
   useEffect(() => {
+
     const getRestaurants = async () => {
       const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
       console.log(data);
       setRestaurants(data);
+
+      const markerCluster = new window.L.MarkerClusterGroup({
+        showCoverageOnHover: false,
+        iconCreateFunction: createCustomClusterIcon
+      });
+
+      markerClusterReference.current = markerCluster;
+  
+      const newMarkerList: {name: string, marker: L.Marker<any>}[] = [];
+      data.forEach(restaurant => {
+        let [latitude, longitude] = restaurant.location.coordinates;
+        let flippedCoords = [longitude, latitude];
+  
+        
+
+        const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
+        .addTo(markerCluster)
+        .bindTooltip(restaurant.name)
+        .on('click', () => handleMarkerClick(restaurant));
+        
+        newMarkerList.push({name: restaurant.name, marker: marker});
+        
+      });
+
+      setMarkerList(newMarkerList);
+      markerListReference.current = newMarkerList;
+  
+      if (mapRef.current) {
+        mapRef.current.addLayer(markerCluster);
+      }
     }
     getRestaurants();
   }, []);
 
+  var clicked = false;
+
+  const handleMarkerClick = (restaurant: Restaurant) => {
+    console.log("test");
+    if (!clicked) {
+      clicked = true;
+      markerListReference.current.forEach(marker => {
+        if (marker.name != restaurant.name) {
+          console.log("MARKER HIDDEN:" + marker.name)
+          marker.marker.setOpacity(0);
+          if (markerClusterReference.current) {
+            markerClusterReference.current.removeLayer(marker.marker);
+          }
+        }
+      })
+
+      displayRestaurant(restaurant);
+    }
+    else {
+      clicked = false;
+      backButton();
+    }
+  }
+
+  const [displayTopRestaurants, setDisplayRestaurants] = useState(true);
+  const [activeRestaurant, setActiveRestaurant] = useState<Restaurant>();
+ 
+  const displayRestaurant = (restaurant: Restaurant) => {
+    //console.log(restaurant);
+    setDisplayRestaurants(false);
+    setActiveRestaurant(restaurant);
+
+    markerListReference.current.forEach(marker => {
+      if (marker.name != restaurant.name) {
+        console.log("MARKER HIDDEN:" + marker.name)
+        marker.marker.setOpacity(0);
+        if (markerClusterReference.current) {
+          markerClusterReference.current.removeLayer(marker.marker);
+        }
+      }
+    })
+  }
+
+  const backButton = () => {
+    setDisplayRestaurants(true);
+    setActiveRestaurant(undefined);
+
+    markerListReference.current.forEach(marker => {
+      marker.marker.setOpacity(1);
+      if (markerClusterReference.current) {
+        markerClusterReference.current.addLayer(marker.marker);
+      }
+    })
+  }
+
+
+  const [workingHours, setWorkingHours] = useState("")
+
+  function isOpen(close: string, open: string): boolean {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    now.setHours(currentHour, currentMinutes);
+
+    const [openHour, openMinutes] = open.split(':').map(Number);
+    const [closeHour, closeMinutes] = close.split(':').map(Number);
+
+
+    const openTime = new Date();
+    openTime.setHours(openHour, openMinutes);
+    const closeTime = new Date();
+    closeTime.setHours(closeHour, closeMinutes);
+
+    if (now >= closeTime && now <= openTime) {
+      return true;
+    }
+    return false;
+  }
+
+  function getCurrentDay(): string {
+    const date = new Date();
+    const days = ["Ponedeljek", "Torek", "Sreda", "Četrtek", "Petek", "Sobota", "Nedelja"]
+    const dayIndex = date.getDay();
+    return days[dayIndex];
+  }
+
+  const getClosingTime = (restaurant: Restaurant | undefined): string =>  {
+    if (restaurant) {
+      var returnString = "";
+      restaurant?.workingHours.map((day: WorkingHours, index: number) => {
+        if (day.day == getCurrentDay()) {
+          if (!isOpen(day.close, day.open)) {
+            returnString += "Odprto, zapre se ob " + day.close;
+            return returnString
+          }
+          else {
+            const nextDay = restaurant.workingHours[index + 1]
+            returnString += "Zaprto, odpre se ob " + nextDay.open;
+            return returnString;
+          }
+        }
+      })
+      return returnString;
+    }
+    return "";
+  }
+
   return (
     <div className={styles['container']}>
+
       <div id="map" className={styles['map']}></div>
-      <div className={styles['restaurants']}>
-        <div className={styles['restaurants-header']}>TOP RESTAVRACIJEasd</div>
-        {restaurants.map((restaurant) => (
-          <div key={restaurant._id} className={styles['restaurant-div']}>
-            <h3>{restaurant.name}</h3>
-            <div className={styles['restaurant-photo']}>
-              <img src={`http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}`} alt="restaurant" />
+
+      {displayTopRestaurants ?
+        <div className={styles['restaurants']}>
+          <div className={styles['restaurants-header']}>TOP RESTAVRACIJEasd</div>
+          {restaurants.map((restaurant) => (
+            <div key={restaurant._id} className={styles['restaurant-div']} onClick={() => displayRestaurant(restaurant)}>
+              <h3>{restaurant.name}</h3>
+              <div className={styles['restaurant-photo']}>
+                <img src={`http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}`} alt="restaurant" />
+              </div>
             </div>
+          ))}
+        </div>
+        :
+        <div className={styles['restaurant-info']}>
+          <div className={styles['upper-div']}>
+            <div className={styles['displayed-restaurant-photo']}><img src={`http://${process.env.REACT_APP_URL}:3001${activeRestaurant?.photo.imagePath}`} alt="restaurant" /></div>
+            <div className={styles['displayed-restaurant-title']}>{activeRestaurant?.name}</div>
+            <div className={styles['displayed-restaurant-info']}>Cena obroka: {activeRestaurant?.mealPrice}</div>
+            <div className={styles['displayed-restaurant-info']}>Doplačilo: {activeRestaurant?.mealSurcharge}</div>
+            <div className={styles['displayed-restaurant-info']}>{activeRestaurant?.address}</div>
+            <div className={styles['displayed-restaurant-info']}>Danes: {getClosingTime(activeRestaurant)}</div>
           </div>
-        ))}
-      </div>
+          <div className={styles['back-button-container']}>
+            <Button type='primary' width='100%'>Več</Button>
+            <Button type='primary' width='100%' onClick={() => backButton()}>Nazaj</Button>
+          </div>
+        </div>
+      }
     </div>
   );
 }
