@@ -59,6 +59,7 @@ module.exports = {
      * userController.create()
      */
     create: async function (req, res) {
+        console.log(req.body)
         if(req.body.userType === "admin") {
             try {
                 const user = await UserModel.findById(req.user._id);
