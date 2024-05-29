@@ -32,7 +32,7 @@ function Authenticate({ handleClose } : AuthenticateProps) {
                     Registracija
                 </div>
             </div>
-            {currentState === 'login' ? <Login handleClose={handleClose}/> : <Register handleClose={handleClose}/>}
+            {currentState === 'login' ? <Login handleClose={handleClose}/> : <Register switchToLogin={setStateLogin}/>}
         </div>
     </Modal>
   );
