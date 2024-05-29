@@ -21,7 +21,7 @@ const Input = styled.input`
 const Label = styled.label<{ disabled?: boolean }>`
   position: relative;
   display: inline-block;
-  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  cursor: ${(props: any) => (props.disabled ? "not-allowed" : "pointer")};
   margin: 0.6em 0 -0.6em 0;
 `;
 
