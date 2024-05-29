@@ -35,8 +35,6 @@ function Navbar() {
 
     const userContext = useContext(UserContext); 
 
-    console.log(userContext.user)
-
     return (
         <>
         <nav className={styles['navbar']}>

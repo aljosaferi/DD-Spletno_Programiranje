@@ -1,0 +1,42 @@
+@import '../../variables';
+
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 20vh;
+    border: 2px solid $blue-second;
+    border-radius: 20px;
+    overflow: hidden;
+
+    .image-container {
+        width: 30%;
+        overflow: hidden;
+
+        img {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+            transition: transform 0.2s ease-in-out;
+        }
+    }
+
+    .text-container {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+
+        .name {
+            h1 {
+                color: $blue-second;
+            }
+        }
+    }
+
+    &:hover {
+        cursor: pointer;
+        
+        .image-container img {
+            transform: scale(1.05);
+        }
+    }
+}
