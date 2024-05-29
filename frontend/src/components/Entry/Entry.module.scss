@@ -1,0 +1,43 @@
+@import "../../variables";
+
+.entry {
+  width: 70vw;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+
+  background-image: url("./layered-waves-haikei.svg");
+
+  margin: 20px auto;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.bg {
+}
+
+.entryHeader {
+  height: 4.2rem;
+}
+
+.entryContent {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.entryLoginButton,
+.entryRegisterButton {
+  width: 50%;
+  display: inline-block;
+  height: 100%;
+  color: $color-secondary;
+  background-color: $blue-third;
+  align-content: center;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  &:hover {
+    animation-duration: 2ms;
+    background-color: $blue-second-hover;
+  }
+}
