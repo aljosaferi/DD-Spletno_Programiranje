@@ -29,10 +29,10 @@ function EditNews({ handleClose } : EditNewsProps) {
                 
             </div>
             <div className={styles['title']}>
-                <input type='text' placeholder='Naslov' onChange={handleChange}/>
+                <input type='text' placeholder='Naslov' onChange={handleChange} required/>
             </div>
             <div className={styles['content']}>
-                <textarea placeholder='Vsebina' onChange={handleChange}/>
+                <textarea placeholder='Vsebina' onChange={handleChange} required/>
             </div>
             <div className={styles['submit']}>
                 <Button type="primary" padding={'0.7rem'} disabled={!isEdited}>

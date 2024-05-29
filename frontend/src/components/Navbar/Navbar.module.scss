@@ -81,7 +81,7 @@
     color: $color-secondary;
     transition: color 0.3s ease;
     display: none;
-    z-index: 100;
+    z-index: 9;
 
     &.open {
         color: $blue-second;
@@ -89,7 +89,7 @@
         position: fixed;
         top: 0.2rem;
         right: 0.2rem;
-        z-index: 20;
+        z-index: 11;
       }
 }
 
@@ -118,7 +118,7 @@
         position: fixed;
         top: 0.2rem;
         right: 0.2rem;
-        z-index: 20;
+        z-index: 9;
     }
 
     .nav-buttons {

@@ -21,8 +21,8 @@ function Button({
 }: ButtonProps) {
     return (
         <motion.button
-            whileHover={disabled ? {} : {scale: 1.05}}
-            whileTap={disabled ? {} : {scale: 0.9}}
+            whileHover={disabled ? {} : {scale: 1.02}}
+            whileTap={disabled ? {} : {scale: 0.98}}
             className={styles[type]} 
             disabled={disabled} 
             onClick={onClick}

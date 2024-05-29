@@ -23,10 +23,10 @@ function AddNews({ handleClose } : AddNewsProps) {
                 
             </div>
             <div className={styles['title']}>
-                <input type='text' placeholder='Naslov'/>
+                <input type='text' placeholder='Naslov' required/>
             </div>
             <div className={styles['content']}>
-                <textarea placeholder='Vsebina'/>
+                <textarea placeholder='Vsebina' required/>
             </div>
             <div className={styles['submit']}>
                 <Button type="primary" padding={'0.7rem'}>

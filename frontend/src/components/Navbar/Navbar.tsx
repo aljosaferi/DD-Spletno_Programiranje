@@ -6,6 +6,7 @@ import { Turn as Hamburger } from 'hamburger-react';
 import styles from './Navbar.module.scss'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import Backdrop from '../Backdrop/Backdrop';
+import Authenticate from '../Authenticate/Authenticate';
 
 
 const dropIn = {
@@ -25,8 +26,11 @@ const dropIn = {
 
 function Navbar() {
     const[isMenuOpen, setIsMenuOpen] = useState(false);
-
     const closeMenu = () => setIsMenuOpen(false);
+
+    const[isAuthenticateOpen, setIsAuthenticateOpen] = useState(false);
+    const openAuthenticate = () => setIsAuthenticateOpen(true);
+    const closeAuthenticate = () => setIsAuthenticateOpen(false);
 
     return (
         <>
@@ -80,9 +84,7 @@ function Navbar() {
                 </NavLink>
             </ul>
             <div className={styles['user']}>
-                <Link to="/login">
-                    <Button type="secondary">Prijava</Button>
-                </Link>
+                <Button type="secondary" onClick={openAuthenticate}>Prijava</Button>
             </div>
         </nav>
         <motion.div
@@ -98,7 +100,7 @@ function Navbar() {
             />
         </motion.div>
 
-
+        {/* Slide-out menu */}
         <AnimatePresence>
             {isMenuOpen ?
             <Backdrop onClick={closeMenu}>
@@ -156,13 +158,22 @@ function Navbar() {
                     </div>
                     <div className={styles['bottom']}>
                         <Link to="/login" onClick={closeMenu}>
-                            <Button type="primary" width={"200px"}>Prijava</Button>
+                            <Button type="primary" width={"200px"} onClick={openAuthenticate}>Prijava</Button>
                         </Link>
                     </div>
                 </div>
                 </motion.div>
             </Backdrop>
             : null
+            }
+        </AnimatePresence>
+
+        {/* Authenticate modal */}    
+        <AnimatePresence>
+            {isAuthenticateOpen ?
+                <Authenticate handleClose={closeAuthenticate}/>
+            :
+                null
             }
         </AnimatePresence>
         </>
