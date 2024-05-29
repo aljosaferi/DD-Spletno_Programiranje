@@ -47,6 +47,13 @@ input {
     }
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active  {
+    -webkit-box-shadow: 0 0 0 30px lighten($blue-fifth, 15%) inset !important;
+}
+
 textarea {
     height: 100% !important;
     width: 100% !important;
