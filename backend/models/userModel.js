@@ -72,6 +72,7 @@ userSchema.pre('findOneAndDelete', async function(next) {
 
 userSchema.statics.authenticate = function(username, password, callback){
 	User.findOne({username: username})
+	.populate('profilePhoto')
 	.then(user => {
 		if(!user) {
 			var err = new Error("User not found.");
