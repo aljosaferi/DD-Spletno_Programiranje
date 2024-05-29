@@ -59,7 +59,7 @@ function Map() {
       });
       mapRef.current = map;
       
-      const markerCluster = L.markerClusterGroup({
+      const markerCluster = new window.L.MarkerClusterGroup({
         showCoverageOnHover: false,
         iconCreateFunction: createCustomClusterIcon
       });
