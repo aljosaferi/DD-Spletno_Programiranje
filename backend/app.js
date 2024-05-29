@@ -21,7 +21,7 @@ var tagsRouter = require('./routes/tagRoutes.js');
 var app = express();
 
 var cors = require('cors');
-var allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+var allowedOrigins = [`http://${process.env.SERVER_IP}:3000`, `http://${process.env.SERVER_IP}:3001`];
 app.use(cors({
   credentials: true,
   origin: function(origin, callback){

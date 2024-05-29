@@ -134,7 +134,7 @@ function Map() {
 
   useEffect(() => {
     const getRestaurants = async () => {
-      const res = await fetch('http://localhost:3001/restaurants');
+      const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
       console.log(data);
       setRestaurants(data);
@@ -151,7 +151,7 @@ function Map() {
           <div key={restaurant._id} className={styles['restaurant-div']}>
             <h3>{restaurant.name}</h3>
             <div className={styles['restaurant-photo']}>
-              <img src={`http://localhost:3001${restaurant.photo.imagePath}`} alt="restaurant" />
+              <img src={`http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}`} alt="restaurant" />
             </div>
           </div>
         ))}
