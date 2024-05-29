@@ -13,6 +13,8 @@ $blue-third: darken(adjust-hue(#00B4D8, 160deg), 10%);
 $blue-fourth: darken(adjust-hue(#90E0EF, 160deg), 10%);
 $blue-fifth: darken(adjust-hue(#CAF0F8, 160deg), 10%);
 
+$blue-second-disabled: desaturate(lighten($blue-second, 30%), 40%);
+
 /* $red-first: adjust-hue(#03045E, 120deg);
 $red-second: adjust-hue(#0077B6, 120deg);
 $red-third: adjust-hue(#00B4D8, 120deg);

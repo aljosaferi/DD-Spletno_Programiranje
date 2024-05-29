@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import Button from '../Button/Button';
 import { Turn as Hamburger } from 'hamburger-react';
 
-import './Navbar.scss'; 
+import styles from './Navbar.module.scss'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import Backdrop from '../Backdrop/Backdrop';
 
@@ -30,13 +30,13 @@ function Navbar() {
 
     return (
         <>
-        <nav className="navbar">
-            <div className="left">
-                <div className="logo-link">
+        <nav className={styles['navbar']}>
+            <div className={styles['left']}>
+                <div className={styles['logo-link']}>
                     <Link to="/">
-                        <div className="logo">
-                            <img className="logo-image" src="/images/salad-white.png" alt="logo"/>    
-                            <div className="logo-text">
+                        <div className={styles['logo']}>
+                            <img className={styles['logo-image']} src="/images/salad-white.png" alt="logo"/>    
+                            <div className={styles['logo-text']}>
                                 <h1>Študentska</h1>
                                 <h1>prehrana</h1>
                             </div>
@@ -44,97 +44,122 @@ function Navbar() {
                     </Link>
                 </div>
             </div>
-            <ul className="nav-buttons">
-                <NavLink to="/">
+            <ul className={styles['nav-buttons']}>
+                <NavLink 
+                    to="/" 
+                    className={({ isActive }) => isActive ? styles['active'] : ''}
+                >
                     <li>
                         <h2>
                             <i className="fa-solid fa-house"/>
-                            <span className="nav-text">Domov</span>
+                            <span className={styles['nav-text']}>Domov</span>
                         </h2>
                     </li>
                 </NavLink>
-                <NavLink to="/restaurants">
+                <NavLink 
+                    to="/restaurants" 
+                    className={({ isActive }) => isActive ? styles['active'] : ''}
+                >
                     <li>
                         <h2>
                             <i className="fa-solid fa-utensils"/>
-                            <span className="nav-text">Restavracije</span>
+                            <span className={styles['nav-text']}>Restavracije</span>
                         </h2>
                     </li>
                 </NavLink>
-                <NavLink to="/map">
+                <NavLink 
+                    to="/map" 
+                    className={({ isActive }) => isActive ? styles['active'] : ''}
+                >
                     <li>
                         <h2>
                             <i className="fa-solid fa-map-location-dot"/>
-                            <span className="nav-text">Zemljevid</span>
+                            <span className={styles['nav-text']}>Zemljevid</span>
                         </h2>
                     </li>
                 </NavLink>
             </ul>
-            <div className="user">
+            <div className={styles['user']}>
                 <Link to="/login">
                     <Button type="secondary">Prijava</Button>
                 </Link>
             </div>
         </nav>
-
-        <div className={`menu ${isMenuOpen ? 'open' : ''}`}>
+        <motion.div
+            whileHover={{scale: 1.05}}
+            whileTap={{ scale: 0.9 }}
+            className={`${styles['menu']} ${isMenuOpen ? styles['open'] : ''}`}
+        >
             <Hamburger 
-            toggled={isMenuOpen}
-            toggle={setIsMenuOpen}
-            distance="md" 
-            rounded/>
-        </div>
+                toggled={isMenuOpen}
+                toggle={setIsMenuOpen}
+                distance="md" 
+                rounded
+            />
+        </motion.div>
 
 
         <AnimatePresence>
             {isMenuOpen ?
             <Backdrop onClick={closeMenu}>
                 <motion.div 
-                    className="mobile-nav"
+                    className={styles['mobile-nav']}
                     variants={dropIn}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                     onClick={(e) => e.stopPropagation()}
-                    >
-                    <div className="mobile-top-buffer">
-                        <img className="mobile-logo-image" src="/images/salad.png" alt="logo"/>
+                >
+                <div className={styles['mobile-top-buffer']}>
+                    <img className={styles['mobile-logo-image']} src="/images/salad.png" alt="logo"/>
+                </div>
+                <div className={styles['mobile-buttons']}>
+                    <div className={styles['mobile-top']}>
+                        <ul className={styles['top']}>
+                            <NavLink 
+                                to="/" 
+                                className={({ isActive }) => isActive ? styles['active'] : ''}
+                                onClick={closeMenu}
+                            >
+                                <li>
+                                    <h2>
+                                    <i className="fa-solid fa-house"/>
+                                    <span className={styles['mobile-nav-text']}>Domov</span>
+                                    </h2>
+                                </li>
+                            </NavLink>
+                            <NavLink 
+                                to="/restaurants" 
+                                className={({ isActive }) => isActive ? styles['active'] : ''}
+                                onClick={closeMenu}
+                            >
+                                <li>
+                                    <h2>
+                                    <i className="fa-solid fa-utensils"/>
+                                    <span className={styles['mobile-nav-text']}>Restavracije</span>
+                                    </h2>
+                                </li>
+                            </NavLink>
+                            <NavLink 
+                                to="/map" 
+                                className={({ isActive }) => isActive ? styles['active'] : ''}
+                                onClick={closeMenu}
+                            >
+                                <li>
+                                    <h2>
+                                    <i className="fa-solid fa-map-location-dot"/>
+                                    <span className={styles['mobile-nav-text']}>Zemljevid</span>
+                                    </h2>
+                                </li>
+                            </NavLink>
+                        </ul>
                     </div>
-                    <div className="mobile-buttons">
-                        <div className="mobile-top">
-                            <ul className="top">
-                                <NavLink to="/" onClick={closeMenu}>
-                                    <li>
-                                        <h2>
-                                            <i className="fa-solid fa-house"/>
-                                            <span className="mobile-nav-text">Domov</span>
-                                        </h2>
-                                    </li>
-                                </NavLink>
-                                <NavLink to="/restaurants" onClick={closeMenu}>
-                                    <li>
-                                        <h2>
-                                            <i className="fa-solid fa-utensils"/>
-                                            <span className="mobile-nav-text">Restavracije</span>
-                                        </h2>
-                                    </li>
-                                </NavLink>
-                                <NavLink to="/map" onClick={closeMenu}>
-                                    <li>
-                                        <h2>
-                                            <i className="fa-solid fa-map-location-dot"/>
-                                            <span className="mobile-nav-text">Zemljevid</span>
-                                        </h2>
-                                    </li>
-                                </NavLink>
-                            </ul>
-                        </div>
-                        <div className='bottom'>
-                            <Link to="/login" onClick={closeMenu}>
-                                <Button type="primary" width={"200px"}>Prijava</Button>
-                            </Link>
-                        </div>
+                    <div className={styles['bottom']}>
+                        <Link to="/login" onClick={closeMenu}>
+                            <Button type="primary" width={"200px"}>Prijava</Button>
+                        </Link>
                     </div>
+                </div>
                 </motion.div>
             </Backdrop>
             : null
