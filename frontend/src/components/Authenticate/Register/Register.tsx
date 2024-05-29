@@ -2,7 +2,11 @@ import Button from '../../Button/Button';
 
 import styles from './Register.module.scss';
 
-function Register() {
+interface RegisterProps {
+    handleClose: () => void;
+}
+
+function Register({ handleClose }, RegisterProps) {
     return (
         <div className={styles['container']}>
             <form>

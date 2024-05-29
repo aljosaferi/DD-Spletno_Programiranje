@@ -6,6 +6,7 @@
     align-items: center;
     position: sticky;
     top: 0;
+    height: 3.6rem;
 
     background-color: $background-color-secondary;
 
@@ -44,14 +45,23 @@
 .nav-buttons {
     display: flex;
     justify-content: center;
+    height: 100%;
 
     .nav-text {
         margin-left: 0.2rem;
     }
+
+    a {
+        display: flex;
+        align-items: center;
+    }
 }
 
 .nav-buttons li {
-    padding: 1.2em;
+    height: 100%;
+    padding: 0 1.2em;
+    display: flex;
+    align-items: center;
 
     &:hover {
         color: $blue-third-hover;
@@ -75,6 +85,18 @@
 .user {
     display: flex;
     justify-content: end;
+
+    .user-profile {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+
+        img {
+            width: 2.6rem;
+            border-radius: 50%;
+        }
+    }
 }
 
 .menu {
@@ -106,6 +128,12 @@
     .navbar .nav-buttons {
         flex: 4;
       }
+
+    .user .user-profile {
+        h2 {
+            display: none;
+        }
+    }
 }
 
 @media (max-width: 650px) {
@@ -209,8 +237,47 @@
         display: flex;
         flex-direction: row;
         justify-content: center;
+        align-items: center;
         width: 100%;
         padding: 1rem;
+
+        .user-profile {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+
+            .username-photo {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+
+            img {
+                width: 3rem;
+                border-radius: 50%;
+            }
+
+            h2 {
+                color: $color-primary;
+            }
+            margin-right: auto;
+
+            .logout-container {
+                color: $blue-third;
+
+                &:hover {
+                    cursor: pointer;
+                    color: $blue-third-hover;
+                }
+            
+                &:active {
+                    color: $blue-third-active;
+                }
+            }
+        }
     }
 
     @media (max-width:480px) {
@@ -220,12 +287,4 @@
             display: flex;
         }
     }
-}
-
-.jebemti {
-    color: black;
-    z-index: 10;
-    position: absolute;
-    top: 0;
-    right: 0;
 }

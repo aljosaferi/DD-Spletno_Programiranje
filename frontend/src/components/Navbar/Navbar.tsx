@@ -1,4 +1,4 @@
-import { useState } from 'react' 
+import { useState, useContext } from 'react' 
 import { Link, NavLink } from 'react-router-dom';
 import Button from '../Button/Button';
 import { Turn as Hamburger } from 'hamburger-react';
@@ -7,6 +7,7 @@ import styles from './Navbar.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
 import Backdrop from '../Backdrop/Backdrop';
 import Authenticate from '../Authenticate/Authenticate';
+import { UserContext } from '../../userContext';
 
 
 const dropIn = {
@@ -31,6 +32,10 @@ function Navbar() {
     const[isAuthenticateOpen, setIsAuthenticateOpen] = useState(false);
     const openAuthenticate = () => setIsAuthenticateOpen(true);
     const closeAuthenticate = () => setIsAuthenticateOpen(false);
+
+    const userContext = useContext(UserContext); 
+
+    console.log(userContext.user)
 
     return (
         <>
@@ -84,7 +89,14 @@ function Navbar() {
                 </NavLink>
             </ul>
             <div className={styles['user']}>
-                <Button type="secondary" onClick={openAuthenticate}>Prijava</Button>
+                {userContext.user ?
+                    <div className={styles['user-profile']}>
+                        <img src={`http://${process.env.REACT_APP_URL}:3001${userContext.user.profilePhoto.imagePath}`} alt="Avatar"/>
+                        <h2>{userContext.user.username}</h2>    
+                    </div>
+                :
+                    <Button type="secondary" onClick={openAuthenticate}>Prijava</Button>
+                }
             </div>
         </nav>
         <motion.div
@@ -157,9 +169,26 @@ function Navbar() {
                         </ul>
                     </div>
                     <div className={styles['bottom']}>
+                        {userContext.user ?
+                            <div className={styles['user-profile']}>
+                                <div className={styles['username-photo']}>
+                                    <img src={`http://${process.env.REACT_APP_URL}:3001${userContext.user.profilePhoto.imagePath}`} alt="Avatar"/>
+                                    <h2>{userContext.user.username}</h2>    
+                                </div>
+                                <motion.div
+                                    whileHover={{scale: 1.05}}
+                                    whileTap={{ scale: 0.9 }}
+                                    className={styles['logout-container']}
+                                    onClick={() => userContext.setUserContext(null)}
+                                >
+                                    <i className="fa-solid fa-right-from-bracket"/>
+                                </motion.div>
+                            </div>
+                        :
                         <Link to="/login" onClick={closeMenu}>
                             <Button type="primary" width={"200px"} onClick={openAuthenticate}>Prijava</Button>
                         </Link>
+                        }
                     </div>
                 </div>
                 </motion.div>
