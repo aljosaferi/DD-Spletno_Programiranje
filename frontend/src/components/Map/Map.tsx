@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import L, { MarkerCluster, point } from 'leaflet';
+import { point } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import styles from './Map.module.scss';
 import { Icon, divIcon } from 'leaflet';
 
-import 'leaflet.markercluster';
+import * as L from 'leaflet';
+import 'leaflet.markercluster/dist/leaflet.markercluster';
 
 function Map() {
   const markers = [
