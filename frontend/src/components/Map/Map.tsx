@@ -121,7 +121,15 @@ function Map() {
 
         const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
         .addTo(markerCluster)
-        .bindTooltip(restaurant.name)
+        .bindTooltip(
+          `<div class="${styles.hoverDiv}">
+            <div class="${styles.hoverDivTitle}">${restaurant.name}</div>
+            <div class="${styles.hoverDivImg}"><img src="http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}" alt="restaurant" /></div>
+          </div>`,
+          { direction: 'top',
+            offset: L.point(0, 20)
+           }
+        )
         .on('click', () => handleMarkerClick(restaurant));
         
         newMarkerList.push({name: restaurant.name, marker: marker});
