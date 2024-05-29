@@ -27,3 +27,40 @@ h2 {
     font-weight: normal;
     font-size: 1rem;
 }
+
+body.no-scroll {
+    overflow: hidden;
+}
+
+input {
+    width: 100%;
+    padding: 1rem;
+    border: 3px solid $blue-second;
+    border-radius: 10px;
+
+    font-family: 'Mona Sans';
+    font-size: 1.1rem;
+
+    &:focus {
+        border: 3px solid $blue-second-active;
+        outline-color: $blue-second-active;
+    }
+}
+
+textarea {
+    height: 100% !important;
+    width: 100% !important;
+    resize: none;
+    padding: 1rem;
+
+    font-family: 'Mona Sans';
+    font-size: 1.1rem;
+
+    border: 3px solid $blue-second;
+    border-radius: 10px;
+
+    &:focus {
+        border: 3px solid $blue-second-active;
+        outline-color: $blue-second-active;
+    }
+}

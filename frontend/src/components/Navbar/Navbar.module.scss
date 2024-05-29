@@ -81,9 +81,15 @@
     color: $color-secondary;
     transition: color 0.3s ease;
     display: none;
+    z-index: 100;
 
     &.open {
         color: $blue-second;
+        display: flex;
+        position: fixed;
+        top: 0.2rem;
+        right: 0.2rem;
+        z-index: 20;
       }
 }
 
@@ -112,7 +118,7 @@
         position: fixed;
         top: 0.2rem;
         right: 0.2rem;
-        z-index: 1000;
+        z-index: 20;
     }
 
     .nav-buttons {
@@ -214,4 +220,12 @@
             display: flex;
         }
     }
+}
+
+.jebemti {
+    color: black;
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    right: 0;
 }

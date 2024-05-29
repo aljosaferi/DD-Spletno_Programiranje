@@ -1,11 +1,13 @@
+import { motion } from 'framer-motion';
 
-import './Button.scss'
+import styles from './Button.module.scss'
 
 interface ButtonProps {
-    type: "primary" | "secondary";
+    type: "primary" | "secondary" | "tertiary";
     children?: React.ReactNode;
     disabled?: boolean;
     width?: string | number;
+    padding?: string | number;
     onClick?: () => void;
 }
 
@@ -14,17 +16,20 @@ function Button({
     children,
     disabled,
     width,
+    padding = "0.5rem",
     onClick
 }: ButtonProps) {
     return (
-        <button 
-            className={type} 
+        <motion.button
+            whileHover={disabled ? {} : {scale: 1.05}}
+            whileTap={disabled ? {} : {scale: 0.9}}
+            className={styles[type]} 
             disabled={disabled} 
             onClick={onClick}
-            style={{ width: width }}
+            style={{ width: width, padding: padding }}
         >
             {children}
-        </button>
+            </motion.button>
     );
 }
 
