@@ -30,6 +30,7 @@ module.exports = {
         RestaurantModel.find(filter)
         .sort(sort)
         .populate('tags')
+        .populate('photo')
         .then(restaurants => {
             return res.json(restaurants);
         }).catch(err => {
