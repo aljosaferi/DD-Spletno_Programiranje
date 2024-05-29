@@ -146,7 +146,7 @@ function Map() {
     <div className={styles['container']}>
       <div id="map" className={styles['map']}></div>
       <div className={styles['restaurants']}>
-        <div className={styles['restaurants-header']}>NAJJAĆE RESTARVACIJE</div>
+        <div className={styles['restaurants-header']}>TOP RESTAVRACIJE</div>
         {restaurants.map((restaurant) => (
           <div key={restaurant._id} className={styles['restaurant-div']}>
             <h3>{restaurant.name}</h3>
