@@ -4,6 +4,8 @@ import styles from './Restaurants.module.scss';
 import { getApiCall } from '../../api/apiCalls';
 import RestaurantCard from '../../components/RestaurantCard/RestaurantCard';
 
+import { debounce } from 'lodash';
+
 type WorkingHour = {
     day: string;
     open: string;
@@ -47,18 +49,29 @@ function Restaurants() {
                                          'lowest-rated-first' | 
                                          'highest-rated-first' |
                                          null >(null);
+    
+    const [searchBy, setSearchBy] = useState('');
+    const debouncedSetSearchBy = debounce((value) => setSearchBy(value), 250);                                     
 
     useEffect(() => {
         let params = {};
         if (sortBy) {
             params = {
+                ...params,
                 sortBy: sortBy
+            };
+        }
+        if (searchBy) {
+            params = {
+                ...params,
+                name: searchBy
             };
         }
         getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`, params)
         .then(data =>  { setRetaurants(data)})
         .catch(error => console.log(error))
-    }, [sortBy]);
+    }, [sortBy, searchBy]);
+
 
     return (
         <div className={styles['container']}>
@@ -121,6 +134,12 @@ function Restaurants() {
                         </div>
                     </div>
                 </div>
+                <input 
+                    type='text' 
+                    placeholder='Išči po imenu'
+                    onKeyUp={(event) => {
+                        debouncedSetSearchBy(event.currentTarget.value);
+                }}/>
             </div>
             <div className={styles['main-content']}>
                 <div className={styles['filter-container']}>

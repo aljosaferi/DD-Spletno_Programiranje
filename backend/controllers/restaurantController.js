@@ -14,7 +14,7 @@ module.exports = {
         var filter = {};
         var sort = {};
         if(req.query.name) {
-            filter.name = { $regex: req.query.name };
+            filter.name = { $regex: new RegExp(req.query.name, 'i') };
         }
         if(req.query.sortBy) {
             if(req.query.sortBy === 'lowest-price-first') {
