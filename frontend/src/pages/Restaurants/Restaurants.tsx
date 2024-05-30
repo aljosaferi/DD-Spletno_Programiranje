@@ -42,18 +42,149 @@ export type Restaurant = {
 function Restaurants() {
     const [restaurants, setRetaurants] = useState<Restaurant[] | null>(null);
 
+    const [sortBy, setSortBy] = useState<'lowest-price-first' |
+                                         'highest-price-first' | 
+                                         'lowest-rated-first' | 
+                                         'highest-rated-first' |
+                                         null >(null);
+
     useEffect(() => {
-        getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`)
+        let params = {};
+        if (sortBy) {
+            params = {
+                sortBy: sortBy
+            };
+        }
+        getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`, params)
         .then(data =>  { setRetaurants(data)})
         .catch(error => console.log(error))
-    }, []);
+    }, [sortBy]);
 
     return (
         <div className={styles['container']}>
-            <div className={styles['restaurants']}>
-                {restaurants && restaurants.map((restaurant, index) => (
-                    <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
-                ))}
+            <div className={styles['search-bar']}>
+                <div className={styles['filter-button']}>
+                    <i className="fa-solid fa-filter"/>
+                    <div className={styles['filters']}>
+                        <h2>Sortiraj:</h2>
+                        <div>
+                            Najcenejše najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'lowest-price-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('lowest-price-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najdražje najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'highest-price-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('highest-price-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najboljša ocena najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'highest-rated-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('highest-rated-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najslabša ocena najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'lowest-rated-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('lowest-rated-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={styles['main-content']}>
+                <div className={styles['filter-container']}>
+                    <div className={styles['filters']}>
+                        <h2>Sortiraj:</h2>
+                        <div>
+                            Najcenejše najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'lowest-price-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('lowest-price-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najdražje najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'highest-price-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('highest-price-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najboljša ocena najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'highest-rated-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('highest-rated-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            Najslabša ocena najprej:
+                            <div className={styles['switch-container']}>
+                                <label className={styles['switch']}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sortBy === 'lowest-rated-first'}
+                                        onChange={(e) => { e.target.checked ? setSortBy('lowest-rated-first') : setSortBy(null)}} 
+                                    />
+                                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className={styles['restaurants']}>
+                    {restaurants && restaurants.map((restaurant, index) => (
+                        <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
+                    ))}
+                </div>
             </div>
         </div>
     )
