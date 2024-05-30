@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Carousel from '../../components/Carousel/Carousel';
 import Reveal from '../../components/Reveal/Reveal';
 import { EmblaOptionsType } from 'embla-carousel'
@@ -9,6 +10,11 @@ import NewsCard from '../../components/NewsCard/NewsCard';
 const OPTIONS: EmblaOptionsType = { align: 'start', slidesToScroll: 'auto' }
 
 function LandingPage() {
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+
     return (
         <div className={styles['container']}>
             <section className={styles['first']}>
