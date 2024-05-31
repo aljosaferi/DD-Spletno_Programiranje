@@ -5,6 +5,7 @@ import { getApiCall } from '../../api/apiCalls';
 import RestaurantCard from '../../components/RestaurantCard/RestaurantCard';
 
 import { debounce } from 'lodash';
+import Reveal from '../../components/Reveal/Reveal';
 
 type WorkingHour = {
     day: string;
@@ -68,7 +69,7 @@ function Restaurants() {
             };
         }
         getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`, params)
-        .then(data =>  { setRetaurants(data)})
+        .then(data =>  { setRetaurants(data) })
         .catch(error => console.log(error))
     }, [sortBy, searchBy]);
 
@@ -201,7 +202,15 @@ function Restaurants() {
                 </div>
                 <div className={styles['restaurants']}>
                     {restaurants && restaurants.map((restaurant, index) => (
-                        <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
+                        <>
+                            {index < 4 ?
+                                <Reveal direction='none' delay={index * 0.1}>
+                                    <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
+                                </Reveal>
+                            :
+                                <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
+                            }
+                        </>
                     ))}
                 </div>
             </div>

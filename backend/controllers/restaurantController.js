@@ -21,10 +21,6 @@ module.exports = {
                 sort.mealSurcharge = 1;
             } else if (req.query.sortBy === 'highest-price-first') {
                 sort.mealSurcharge = -1;
-            } else if (req.query.sortBy === 'lowest-rated-first') {
-                sort.rating = 1;
-            } else if (req.query.sortBy === 'highest-rated-first') {
-                sort.rating = -1;
             }
         }
         RestaurantModel.find(filter)
@@ -32,6 +28,16 @@ module.exports = {
         .populate('tags')
         .populate('photo')
         .then(restaurants => {
+            if (req.query.sortBy === 'lowest-rated-first') {
+                restaurants.sort((a, b) => {
+                    return a.averageRating - b.averageRating;
+            })} 
+            else if (req.query.sortBy === 'highest-rated-first') {
+                restaurants.sort((a, b) => {
+                    return b.averageRating - a.averageRating;
+                }
+            )}
+
             return res.json(restaurants);
         }).catch(err => {
             return res.status(500).json({
