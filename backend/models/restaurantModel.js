@@ -42,7 +42,15 @@ var restaurantSchema = new Schema({
 	'ratings': {
 		type: [{
         	user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
-        	score: { type: Number, required: true, min: 1, max: 5 }
+        	score: { 
+				type: Number, 
+				required: true,
+				min: 1, max: 5,
+				validate : {
+					validator : Number.isInteger,
+					message   : '{VALUE} is not an integer value'
+				}  
+			}
     	}],
 		required: true,
 		default : [] 
