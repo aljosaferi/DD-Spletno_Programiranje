@@ -59,7 +59,6 @@ module.exports = {
      * userController.create()
      */
     create: async function (req, res) {
-        console.log(req.body)
         if(req.body.userType === "admin") {
             try {
                 const user = await UserModel.findById(req.user._id);
@@ -82,15 +81,31 @@ module.exports = {
             }
         }
 
-        var user = new UserModel({
-            username : req.body.username,
-            firstName : req.body.firstName,
-            lastName : req.body.lastName,
-            email : req.body.email,
-            password : req.body.password,
-            profilePhoto : process.env.DEFAULT_AVATAR_ID,
-            userType : req.body.userType,
-        });
+        try {
+            const existingUser = await UserModel.findOne({ username: req.body.username });
+        
+            if (existingUser) {
+                return res.status(400).json({
+                    message: 'Uporabnik s takim uporabniškim imenom že obstaja',
+                });
+            }
+        
+            var user = new UserModel({
+                username : req.body.username,
+                firstName : req.body.firstName,
+                lastName : req.body.lastName,
+                email : req.body.email,
+                password : req.body.password,
+                profilePhoto : process.env.DEFAULT_AVATAR_ID,
+                userType : req.body.userType,
+            });
+        
+        } catch(err) {
+            return res.status(500).json({
+                message: 'Cannot create account',
+                error: err
+            });
+        }
     
         user.save()
         .then(user => {
