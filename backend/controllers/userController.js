@@ -86,7 +86,7 @@ module.exports = {
         
             if (existingUser) {
                 return res.status(400).json({
-                    message: 'A user with this username already exists',
+                    message: 'Uporabnik s takim uporabniškim imenom že obstaja',
                 });
             }
         
