@@ -18,6 +18,9 @@ function Map() {
   
   const [markerList, setMarkerList] = useState<{name: string, marker: L.Marker}[]>([]);
 
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string[]>([]);
+
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
     iconSize: [38, 38]
@@ -107,11 +110,17 @@ function Map() {
   var clicked = false;
 
   useEffect(() => {
-    const filterRestaurants = restaurants.filter(restaurant => 
-      restaurant.name.toLowerCase().includes(searchBy.toLowerCase())
-    );
+    console.log(sortBy);
+    console.log(restaurants);
+
+    const filterRestaurants = restaurants.filter(restaurant => {
+      const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
+      const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.includes(tag));
+  
+      return nameMatch && tagsMatch;
+    });
     handleMap(filterRestaurants);
-  }, [searchBy])
+  }, [searchBy, sortBy])
 
   useEffect(() => {
     const getRestaurants = async () => {
@@ -277,7 +286,7 @@ function Map() {
     return "";
   }
 
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
 
   return (
     <div className={styles['container']}>
@@ -303,9 +312,17 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
+                <input 
+                    type="checkbox" 
+                    checked={sortBy.includes('meso')}
+                    onChange={(e) => { 
+                        if (e.target.checked) {
+                            setSortBy(prevSortBy => [...prevSortBy, 'meso']);
+                        } else {
+                            setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'meso'));
+                        }
+                    }} 
+                />
                     <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
@@ -314,10 +331,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('mešano')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'mešano']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'mešano'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Mešano
@@ -325,10 +350,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('vegetarijansko')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'vegetarijansko']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'vegetarijansko'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Vegetarijansko
@@ -336,10 +369,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('solata')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'solata']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'solata'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Solata
@@ -347,10 +388,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                    type="checkbox" 
+                    checked={sortBy.includes('morski-sadeži')}
+                    onChange={(e) => { 
+                        if (e.target.checked) {
+                            setSortBy(prevSortBy => [...prevSortBy, 'morski-sadeži']);
+                        } else {
+                            setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'morski-sadeži'));
+                        }
+                    }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Morski sadeži
@@ -358,10 +407,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('pizza')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'pizza']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'pizza'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Pizza
@@ -369,10 +426,18 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('hitra-hrana')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'hitra-hrana']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'hitra-hrana'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Hitra hrana
@@ -380,13 +445,38 @@ function Map() {
           <div className={styles['switch-div']}>
             <div className={styles['switch-container']}>
                 <label className={styles['switch']}>
-                    <input 
-                        type="checkbox" 
-                    />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('celiakiji-prijazni-obroki')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'celiakiji-prijazni-obroki']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'celiakiji-prijazni-obroki'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
                 </label>
             </div>
             Celiakiji prijazni obroki
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                <input 
+                  type="checkbox" 
+                  onChange={(e) => {
+                      setSortBy([]);
+                      setTimeout(() => {
+                          e.target.checked = false;
+                      }, 800);
+                  }}
+                />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Počisti izbiro
           </div>
         </div>
       </motion.div>
