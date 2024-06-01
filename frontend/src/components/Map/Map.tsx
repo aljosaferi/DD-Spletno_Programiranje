@@ -12,10 +12,14 @@ import { debounce } from 'lodash';
 
 
 import { getApiCall } from '../../api/apiCalls';
+import { motion } from 'framer-motion';
 
 function Map() {
   
   const [markerList, setMarkerList] = useState<{name: string, marker: L.Marker}[]>([]);
+
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string[]>([]);
 
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
@@ -76,6 +80,11 @@ function Map() {
     __v: number;
   }
 
+  interface Tag {
+    _id: string;
+    name: string;
+  }  
+
   interface Restaurant {
     _id: string;
     name: string;
@@ -90,7 +99,7 @@ function Map() {
     mealPrice: number;
     mealSurcharge: number;
     workingHours: WorkingHours[];
-    tags: string[];
+    tags: Tag[];
     ratings: any[];
     __v: number;
     averageRating: number;
@@ -106,14 +115,20 @@ function Map() {
   var clicked = false;
 
   useEffect(() => {
-    const filterRestaurants = restaurants.filter(restaurant => 
-      restaurant.name.toLowerCase().includes(searchBy.toLowerCase())
-    );
+    console.log(sortBy);
+
+    const filterRestaurants = restaurants.filter(restaurant => {
+      const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
+
+      const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.some(t => t.name.includes(tag)));
+      return nameMatch && tagsMatch;
+    });
+    console.log("filter restaurants" + filterRestaurants)
+
     handleMap(filterRestaurants);
-  }, [searchBy])
+  }, [searchBy, sortBy])
 
   useEffect(() => {
-    
     const getRestaurants = async () => {
       const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
@@ -121,12 +136,13 @@ function Map() {
       setRestaurants(data);
 
       handleMap(data);
+      
     }
     getRestaurants();
   }, []);
 
   const handleMap = (data: Restaurant[]) => {
-    if (markerClusterReference.current) {
+    if (markerClusterReference.current!) {
       markerClusterReference.current.clearLayers();
     }
 
@@ -139,10 +155,9 @@ function Map() {
 
     const newMarkerList: {name: string, marker: L.Marker<any>}[] = [];
     data.forEach(restaurant => {
+      console.log("RESTAURANT" + restaurant.location.coordinates)
       let [latitude, longitude] = restaurant.location.coordinates;
       let flippedCoords = [longitude, latitude];
-
-      
 
       const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
       .addTo(markerCluster)
@@ -279,9 +294,10 @@ function Map() {
     return "";
   }
 
+
+
   return (
     <div className={styles['container']}>
-
       <div id="map" className={styles['map']}>
         <div className={styles['search-bar']} style={{zIndex: 999, position: 'relative'}}>
           <input 
@@ -292,7 +308,173 @@ function Map() {
           }}/>
         </div>
       </div>
-
+        
+      <motion.div className={styles['sidebar']} style={{zIndex: 1000}} animate={{x: isSidebarOpen ? 0 : -250}}>
+        <div className={styles['show-sidebar']} onClick={() => {!isSidebarOpen ? setSidebarOpen(true) : setSidebarOpen(false)}}>
+          <i className="fa-solid fa-chevron-right"></i>
+        </div>
+        <div className={styles['sidebar-title']}>
+          <h1>FILTRIRAJ</h1>
+        </div>
+        <div className={styles['sidebar-content']}>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                <input 
+                    type="checkbox" 
+                    checked={sortBy.includes('meso')}
+                    onChange={(e) => { 
+                        if (e.target.checked) {
+                            setSortBy(prevSortBy => [...prevSortBy, 'meso']);
+                        } else {
+                            setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'meso'));
+                        }
+                    }} 
+                />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Meso
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('mešano')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'mešano']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'mešano'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Mešano
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('vegetarijansko')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'vegetarijansko']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'vegetarijansko'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Vegetarijansko
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('solata')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'solata']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'solata'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Solata
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                    type="checkbox" 
+                    checked={sortBy.includes('morski-sadeži')}
+                    onChange={(e) => { 
+                        if (e.target.checked) {
+                            setSortBy(prevSortBy => [...prevSortBy, 'morski-sadeži']);
+                        } else {
+                            setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'morski-sadeži'));
+                        }
+                    }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Morski sadeži
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('pizza')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'pizza']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'pizza'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Pizza
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('hitra-hrana')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'hitra-hrana']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'hitra-hrana'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Hitra hrana
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                  <input 
+                      type="checkbox" 
+                      checked={sortBy.includes('celiakiji-prijazni-obroki')}
+                      onChange={(e) => { 
+                          if (e.target.checked) {
+                              setSortBy(prevSortBy => [...prevSortBy, 'celiakiji-prijazni-obroki']);
+                          } else {
+                              setSortBy(prevSortBy => prevSortBy.filter(item => item !== 'celiakiji-prijazni-obroki'));
+                          }
+                      }} 
+                  />
+                  <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Celiakiji prijazni obroki
+          </div>
+          <div className={styles['clear-choice-div']}>
+            <Button type='primary' width='100%' onClick={() => setSortBy([])}>Počisti izbiro</Button>
+          </div>
+        </div>
+      </motion.div>
+        
       {displayTopRestaurants ?
         <div className={styles['restaurants']}>
           <div className={styles['restaurants-header']}>TOP RESTAVRACIJE</div>
