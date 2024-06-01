@@ -208,6 +208,9 @@
 }
 .sidebar-content {
     padding: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 .switch-container {
     padding-right: 5px;
@@ -271,4 +274,9 @@ input:checked + .slider:before {
 
 .slider.round:before {
     border-radius: 50%;
+}
+
+.clear-choice-div {
+    margin-top: auto;
+    padding-bottom: 20%;
 }

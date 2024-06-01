@@ -80,6 +80,11 @@ function Map() {
     __v: number;
   }
 
+  interface Tag {
+    _id: string;
+    name: string;
+  }  
+
   interface Restaurant {
     _id: string;
     name: string;
@@ -94,7 +99,7 @@ function Map() {
     mealPrice: number;
     mealSurcharge: number;
     workingHours: WorkingHours[];
-    tags: string[];
+    tags: Tag[];
     ratings: any[];
     __v: number;
     averageRating: number;
@@ -111,14 +116,15 @@ function Map() {
 
   useEffect(() => {
     console.log(sortBy);
-    console.log(restaurants);
 
     const filterRestaurants = restaurants.filter(restaurant => {
       const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
-      const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.includes(tag));
-  
+
+      const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.some(t => t.name.includes(tag)));
       return nameMatch && tagsMatch;
     });
+    console.log("filter restaurants" + filterRestaurants)
+
     handleMap(filterRestaurants);
   }, [searchBy, sortBy])
 
@@ -130,12 +136,13 @@ function Map() {
       setRestaurants(data);
 
       handleMap(data);
+      
     }
     getRestaurants();
   }, []);
 
   const handleMap = (data: Restaurant[]) => {
-    if (markerClusterReference.current) {
+    if (markerClusterReference.current!) {
       markerClusterReference.current.clearLayers();
     }
 
@@ -148,6 +155,7 @@ function Map() {
 
     const newMarkerList: {name: string, marker: L.Marker<any>}[] = [];
     data.forEach(restaurant => {
+      console.log("RESTAURANT" + restaurant.location.coordinates)
       let [latitude, longitude] = restaurant.location.coordinates;
       let flippedCoords = [longitude, latitude];
 
@@ -461,22 +469,8 @@ function Map() {
             </div>
             Celiakiji prijazni obroki
           </div>
-          <div className={styles['switch-div']}>
-            <div className={styles['switch-container']}>
-                <label className={styles['switch']}>
-                <input 
-                  type="checkbox" 
-                  onChange={(e) => {
-                      setSortBy([]);
-                      setTimeout(() => {
-                          e.target.checked = false;
-                      }, 800);
-                  }}
-                />
-                    <span className={`${styles['slider']} ${styles['round']}`}/>
-                </label>
-            </div>
-            Počisti izbiro
+          <div className={styles['clear-choice-div']}>
+            <Button type='primary' width='100%' onClick={() => setSortBy([])}>Počisti izbiro</Button>
           </div>
         </div>
       </motion.div>
