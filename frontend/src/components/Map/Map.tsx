@@ -10,6 +10,8 @@ import 'leaflet.markercluster/dist/leaflet.markercluster';
 import Button from '../Button/Button';
 
 function Map() {
+  
+  const [markerList, setMarkerList] = useState<{name: string, marker: L.Marker}[]>([]);
 
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
@@ -25,11 +27,9 @@ function Map() {
       iconSize: L.point(40, 40),
     });
   };
-
   
   const mapRef = useRef<L.Map | null>(null);
   const markerClusterReference = useRef<any>(null);
-  const allMarkerListReference = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -48,6 +48,7 @@ function Map() {
       }).addTo(map);
     }
 
+    
   
     return () => {
       if (mapRef.current) {
@@ -93,17 +94,22 @@ function Map() {
   }
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [markerList, setMarkerList] = useState<{name: string, marker: L.Marker}[]>([]);
   const markerListReference = useRef<{name: string, marker: L.Marker}[]>([]);
-
+  
+  var clicked = false;
 
   useEffect(() => {
+
 
     const getRestaurants = async () => {
       const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
       console.log(data);
       setRestaurants(data);
+
+      if (markerClusterReference.current) {
+        markerClusterReference.current.clearLayers();
+      }
 
       const markerCluster = new window.L.MarkerClusterGroup({
         showCoverageOnHover: false,
@@ -138,6 +144,9 @@ function Map() {
 
       setMarkerList(newMarkerList);
       markerListReference.current = newMarkerList;
+
+      console.log("marker list:  " + newMarkerList);
+      console.log("marker reference list: " + markerListReference.current);
   
       if (mapRef.current) {
         mapRef.current.addLayer(markerCluster);
@@ -146,11 +155,9 @@ function Map() {
     getRestaurants();
   }, []);
 
-  var clicked = false;
-
   const handleMarkerClick = (restaurant: Restaurant) => {
-    console.log("test");
-    if (!clicked) {
+    
+    if (clicked == false) {
       clicked = true;
       markerListReference.current.forEach(marker => {
         if (marker.name != restaurant.name) {
@@ -165,7 +172,7 @@ function Map() {
       displayRestaurant(restaurant);
     }
     else {
-      clicked = false;
+      console.log("else:" + clicked)
       backButton();
     }
   }
@@ -175,6 +182,7 @@ function Map() {
  
   const displayRestaurant = (restaurant: Restaurant) => {
     //console.log(restaurant);
+    clicked = true;
     setDisplayRestaurants(false);
     setActiveRestaurant(restaurant);
 
@@ -190,8 +198,10 @@ function Map() {
   }
 
   const backButton = () => {
+    console.log("back button:" + clicked)
     setDisplayRestaurants(true);
     setActiveRestaurant(undefined);
+    clicked = false;
 
     markerListReference.current.forEach(marker => {
       marker.marker.setOpacity(1);
@@ -200,7 +210,6 @@ function Map() {
       }
     })
   }
-
 
   const [workingHours, setWorkingHours] = useState("")
 
