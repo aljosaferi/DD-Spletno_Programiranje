@@ -87,3 +87,7 @@ textarea {
         background-color: $blue-second-active;
     }
 }
+
+.leaflet-pane {
+    z-index: 1 !important;
+  }

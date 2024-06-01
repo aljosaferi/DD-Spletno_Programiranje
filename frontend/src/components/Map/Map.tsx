@@ -8,6 +8,10 @@ import { Icon, divIcon } from 'leaflet';
 import * as L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
 import Button from '../Button/Button';
+import { debounce } from 'lodash';
+
+
+import { getApiCall } from '../../api/apiCalls';
 
 function Map() {
   
@@ -95,65 +99,78 @@ function Map() {
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const markerListReference = useRef<{name: string, marker: L.Marker}[]>([]);
-  
+
+  const [searchBy, setSearchBy] = useState('');
+  const debouncedSetSearchBy = debounce((value) => setSearchBy(value), 250);
+
   var clicked = false;
 
   useEffect(() => {
+    const filterRestaurants = restaurants.filter(restaurant => 
+      restaurant.name.toLowerCase().includes(searchBy.toLowerCase())
+    );
+    handleMap(filterRestaurants);
+  }, [searchBy])
 
-
+  useEffect(() => {
+    
     const getRestaurants = async () => {
       const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
       console.log(data);
       setRestaurants(data);
 
-      if (markerClusterReference.current) {
-        markerClusterReference.current.clearLayers();
-      }
-
-      const markerCluster = new window.L.MarkerClusterGroup({
-        showCoverageOnHover: false,
-        iconCreateFunction: createCustomClusterIcon
-      });
-
-      markerClusterReference.current = markerCluster;
-  
-      const newMarkerList: {name: string, marker: L.Marker<any>}[] = [];
-      data.forEach(restaurant => {
-        let [latitude, longitude] = restaurant.location.coordinates;
-        let flippedCoords = [longitude, latitude];
-  
-        
-
-        const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
-        .addTo(markerCluster)
-        .bindTooltip(
-          `<div class="${styles.hoverDiv}">
-            <div class="${styles.hoverDivTitle}">${restaurant.name}</div>
-            <div class="${styles.hoverDivImg}"><img src="http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}" alt="restaurant" /></div>
-          </div>`,
-          { direction: 'top',
-            offset: L.point(0, 20)
-           }
-        )
-        .on('click', () => handleMarkerClick(restaurant));
-        
-        newMarkerList.push({name: restaurant.name, marker: marker});
-        
-      });
-
-      setMarkerList(newMarkerList);
-      markerListReference.current = newMarkerList;
-
-      console.log("marker list:  " + newMarkerList);
-      console.log("marker reference list: " + markerListReference.current);
-  
-      if (mapRef.current) {
-        mapRef.current.addLayer(markerCluster);
-      }
+      handleMap(data);
     }
     getRestaurants();
   }, []);
+
+  const handleMap = (data: Restaurant[]) => {
+    if (markerClusterReference.current) {
+      markerClusterReference.current.clearLayers();
+    }
+
+    const markerCluster = new window.L.MarkerClusterGroup({
+      showCoverageOnHover: false,
+      iconCreateFunction: createCustomClusterIcon
+    });
+
+    markerClusterReference.current = markerCluster;
+
+    const newMarkerList: {name: string, marker: L.Marker<any>}[] = [];
+    data.forEach(restaurant => {
+      let [latitude, longitude] = restaurant.location.coordinates;
+      let flippedCoords = [longitude, latitude];
+
+      
+
+      const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
+      .addTo(markerCluster)
+      .bindTooltip(
+        `<div class="${styles.hoverDiv}">
+          <div class="${styles.hoverDivTitle}">${restaurant.name}</div>
+          <div class="${styles.hoverDivImg}"><img src="http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}" alt="restaurant" /></div>
+        </div>`,
+        { direction: 'top',
+          offset: L.point(0, 20)
+         }
+      )
+      .on('click', () => handleMarkerClick(restaurant));
+      
+      newMarkerList.push({name: restaurant.name, marker: marker});
+      
+    });
+
+    setMarkerList(newMarkerList);
+    markerListReference.current = newMarkerList;
+
+    console.log("marker list:  " + newMarkerList);
+    console.log("marker reference list: " + markerListReference.current);
+
+    if (mapRef.current) {
+      mapRef.current.addLayer(markerCluster);
+    }
+  }
 
   const handleMarkerClick = (restaurant: Restaurant) => {
     
@@ -265,7 +282,16 @@ function Map() {
   return (
     <div className={styles['container']}>
 
-      <div id="map" className={styles['map']}></div>
+      <div id="map" className={styles['map']}>
+        <div className={styles['search-bar']} style={{zIndex: 999, position: 'relative'}}>
+          <input 
+              type='text' 
+              placeholder='Išči po imenu'
+              onKeyUp={(event) => {
+                  debouncedSetSearchBy(event.currentTarget.value);
+          }}/>
+        </div>
+      </div>
 
       {displayTopRestaurants ?
         <div className={styles['restaurants']}>
@@ -284,8 +310,8 @@ function Map() {
           <div className={styles['upper-div']}>
             <div className={styles['displayed-restaurant-photo']}><img src={`http://${process.env.REACT_APP_URL}:3001${activeRestaurant?.photo.imagePath}`} alt="restaurant" /></div>
             <div className={styles['displayed-restaurant-title']}>{activeRestaurant?.name}</div>
-            <div className={styles['displayed-restaurant-info']}>Cena obroka: {activeRestaurant?.mealPrice}</div>
-            <div className={styles['displayed-restaurant-info']}>Doplačilo: {activeRestaurant?.mealSurcharge}</div>
+            <div className={styles['displayed-restaurant-info']}>Cena obroka: {activeRestaurant?.mealPrice} €</div>
+            <div className={styles['displayed-restaurant-info']}>Doplačilo: {activeRestaurant?.mealSurcharge} €</div>
             <div className={styles['displayed-restaurant-info']}>{activeRestaurant?.address}</div>
             <div className={styles['displayed-restaurant-info']}>Danes: {getClosingTime(activeRestaurant)}</div>
           </div>
