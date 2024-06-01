@@ -12,6 +12,7 @@ import { debounce } from 'lodash';
 
 
 import { getApiCall } from '../../api/apiCalls';
+import { motion } from 'framer-motion';
 
 function Map() {
   
@@ -113,7 +114,6 @@ function Map() {
   }, [searchBy])
 
   useEffect(() => {
-    
     const getRestaurants = async () => {
       const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants`);
       const data: Restaurant[] = await res.json();
@@ -141,8 +141,6 @@ function Map() {
     data.forEach(restaurant => {
       let [latitude, longitude] = restaurant.location.coordinates;
       let flippedCoords = [longitude, latitude];
-
-      
 
       const marker = L.marker(flippedCoords as L.LatLngTuple, { icon: customIcon })
       .addTo(markerCluster)
@@ -279,9 +277,10 @@ function Map() {
     return "";
   }
 
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className={styles['container']}>
-
       <div id="map" className={styles['map']}>
         <div className={styles['search-bar']} style={{zIndex: 999, position: 'relative'}}>
           <input 
@@ -292,7 +291,106 @@ function Map() {
           }}/>
         </div>
       </div>
-
+        
+      <motion.div className={styles['sidebar']} style={{zIndex: 1000}} animate={{x: isSidebarOpen ? 0 : -250}}>
+        <div className={styles['show-sidebar']} onClick={() => {!isSidebarOpen ? setSidebarOpen(true) : setSidebarOpen(false)}}>
+          <i className="fa-solid fa-chevron-right"></i>
+        </div>
+        <div className={styles['sidebar-title']}>
+          <h1>FILTRIRAJ</h1>
+        </div>
+        <div className={styles['sidebar-content']}>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Meso
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Mešano
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Vegetarijansko
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Solata
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Morski sadeži
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Pizza
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Hitra hrana
+          </div>
+          <div className={styles['switch-div']}>
+            <div className={styles['switch-container']}>
+                <label className={styles['switch']}>
+                    <input 
+                        type="checkbox" 
+                    />
+                    <span className={`${styles['slider']} ${styles['round']}`}/>
+                </label>
+            </div>
+            Celiakiji prijazni obroki
+          </div>
+        </div>
+      </motion.div>
+        
       {displayTopRestaurants ?
         <div className={styles['restaurants']}>
           <div className={styles['restaurants-header']}>TOP RESTAVRACIJE</div>
