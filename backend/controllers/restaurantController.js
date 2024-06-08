@@ -110,6 +110,8 @@ module.exports = {
      * restaurantController.create()
      */
     create: async function (req, res) {
+        console.log("Create restaurant endpoint called");
+        console.log(req.body);
         var coords;
         if(!req.body.coordinates) {
             var requestOptions = {
@@ -120,21 +122,34 @@ module.exports = {
             var data = await response.json()
             
             const restaurantNameWords = req.body.name.toLowerCase().split(' ');
-            var bestMatch = data.features[0];
-            var bestMatchScore = 0;
-
-            for(i in data.features) {
-                if (!data.features[i].properties.name) continue;
-                var featureName = data.features[i].properties.name.toLowerCase();
-                var score = restaurantNameWords.reduce((acc, word) => acc + (featureName.includes(word) ? 1 : 0), 0);
-                if(score > bestMatchScore) {
-                    bestMatch = data.features[i];
-                    bestMatchScore = score;
+            if (!data.features || data.features.length == 0) {
+                console.log("IT GOES THROUGH HERE")
+                mappedCoordinates = req.body.location.coordinates.map(Number);
+                coords = {
+                    type: 'Point',
+                    coordinates: mappedCoordinates
                 }
             }
-            coords = bestMatch.geometry
+            else {
+            //console.log(data.features);
+                var bestMatch = data.features[0];
+                var bestMatchScore = 0;
+
+                for(i in data.features) {
+                    if (!data.features[i].properties.name) continue;
+                    var featureName = data.features[i].properties.name.toLowerCase();
+                    var score = restaurantNameWords.reduce((acc, word) => acc + (featureName.includes(word) ? 1 : 0), 0);
+                    if(score > bestMatchScore) {
+                        bestMatch = data.features[i];
+                        bestMatchScore = score;
+                    }
+                }
+                coords = bestMatch.geometry;
+                console.log("GEOMETRY " + coords);
+            }
         } else {
-            coords = req.body.coordinates;
+            console.log("TESTING")
+            coords = req.body.location.coordinates.map(Number);
         }
 
         var ownerId = req.user._id;
@@ -153,11 +168,13 @@ module.exports = {
 			location : coords,
         });
 
+        //console.log(restaurant);
         restaurant.save()
         .then(restaurant => {
             return res.status(201).json(restaurant)
         })
         .catch(err => {
+            console.log("ERROR" + err);
             return res.status(500).json({
                 message: 'Error when creating restaurant',
                 error: err

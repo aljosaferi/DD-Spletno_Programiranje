@@ -1,8 +1,10 @@
 const jwt = require("jsonwebtoken");
 
 function cookieJWTAuth(req, res, next){
+    console.log("JWTAuthenticate middleware called");
     const token = req.cookies.token;
     if(!token) {
+        console.log("No token");
         return res.status(404).json({ "error": "No token provided" });
     }
 

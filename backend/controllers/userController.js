@@ -192,12 +192,14 @@ module.exports = {
             }
 
             const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, { expiresIn: '1h' })
+            console.log(token)
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: 3600000 // 1 hour in milliseconds
               });
-
-            return res.json(user);
+            
+              
+              return res.status(200).json({user: user, token: token});
         });
     },
 
