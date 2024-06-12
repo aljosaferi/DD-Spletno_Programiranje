@@ -42,8 +42,10 @@ export type Restaurant = {
     averageRating: number;
     id: string;
 };
+
+
 function Restaurants() {
-    const [restaurants, setRetaurants] = useState<Restaurant[] | null>(null);
+    const [restaurants, setRestaurants] = useState<Restaurant[] | null>(null);
 
     const [sortBy, setSortBy] = useState<'lowest-price-first' |
                                          'highest-price-first' | 
@@ -69,9 +71,34 @@ function Restaurants() {
             };
         }
         getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`, params)
-        .then(data =>  { setRetaurants(data) })
+        .then(data =>  { setRestaurants(data) })
         .catch(error => console.log(error))
     }, [sortBy, searchBy]);
+
+    useEffect(() => {
+        const handleWheel = (e) => {
+          e.preventDefault();
+    
+          let scrollAmount = 0;
+          let slideTimer = setInterval(function(){
+              if(e.deltaY < 0) {
+                  window.scrollBy(0, -7);
+              } else {
+                  window.scrollBy(0, 7);
+              }
+              scrollAmount += 7;
+              if(scrollAmount >= Math.abs(e.deltaY)){
+                  window.clearInterval(slideTimer);
+              }
+          }, 1);
+        };
+    
+        window.addEventListener('wheel', handleWheel, { passive: false });
+    
+        return () => {
+          window.removeEventListener('wheel', handleWheel);
+        };
+      }, []);
 
 
     return (
@@ -204,8 +231,8 @@ function Restaurants() {
                     {restaurants && restaurants.map((restaurant, index) => (
                         <>
                             {index < 4 ?
-                                <Reveal direction='none' delay={index * 0.1}>
-                                    <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
+                                <Reveal direction='none' delay={index * 0.1} key={restaurant.id}>
+                                    <RestaurantCard restaurant={restaurant}/>
                                 </Reveal>
                             :
                                 <RestaurantCard restaurant={restaurant} key={restaurant.id}/>
