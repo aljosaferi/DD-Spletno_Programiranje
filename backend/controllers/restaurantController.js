@@ -166,6 +166,7 @@ module.exports = {
 			mealSurcharge : req.body.mealSurcharge,
 			workingHours : req.body.workingHours,
 			location : coords,
+            tags: req.body.tags
         });
 
         //console.log(restaurant);
