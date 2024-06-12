@@ -299,7 +299,7 @@ function Map() {
   return (
     <div className={styles['container']}>
       <div id="map" className={styles['map']}>
-        <div className={styles['search-bar']} style={{zIndex: 999, position: 'relative'}}>
+        <div className={styles['search-bar']} style={{zIndex: 2, position: 'relative'}}>
           <input 
               type='text' 
               placeholder='Išči po imenu'
