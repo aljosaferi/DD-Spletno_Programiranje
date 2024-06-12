@@ -10,9 +10,11 @@ import 'leaflet.markercluster/dist/leaflet.markercluster';
 import Button from '../Button/Button';
 import { debounce } from 'lodash';
 
-
 import { getApiCall } from '../../api/apiCalls';
 import { motion } from 'framer-motion';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
 function Map() {
   
@@ -23,6 +25,10 @@ function Map() {
 
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
+    iconSize: [38, 38]
+  })
+  const blackMarkerIcon = new Icon({
+    iconUrl: require("./marker-black.png"),
     iconSize: [38, 38]
   })
 
@@ -38,6 +44,8 @@ function Map() {
   
   const mapRef = useRef<L.Map | null>(null);
   const markerClusterReference = useRef<any>(null);
+  const isPlacingMarker = useRef(false);
+  const [markerPlaced, setMarkerPlaced] = useState(false)
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -47,6 +55,35 @@ function Map() {
         maxZoom: 22,
       });
       mapRef.current = map;
+
+      map.on('click', function(e) {
+        console.log("Is placing marker current: " + isPlacingMarker.current);
+        console.log("Marker placed: " + markerPlaced);
+        if (isPlacingMarker.current) {
+          isPlacingMarker.current = false;
+          //markerPlaced.current = true
+          setMarkerPlaced(true);
+
+          var coord = e.latlng;
+          var lat = coord.lat;
+          var lng = coord.lng;
+          console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
+          console.log(coord);
+
+          const marker = L.marker(coord, { icon: blackMarkerIcon })
+          .on('click', e => {
+            if (mapRef.current) {
+              e.target.remove();
+              //markerPlaced.current = false;
+              setMarkerPlaced(false);
+            }
+          });
+
+          if (mapRef.current) {
+            mapRef.current.addLayer(marker);
+          }
+        }
+      });
 
       L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
         attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -296,16 +333,33 @@ function Map() {
 
 
 
+
   return (
     <div className={styles['container']}>
       <div id="map" className={styles['map']}>
-        <div className={styles['search-bar']} style={{zIndex: 2, position: 'relative'}}>
+        <div className={styles['search-bar']} style={{zIndex: 2, position: 'relative', display: 'flex'}}>
           <input 
               type='text' 
               placeholder='Išči po imenu'
               onKeyUp={(event) => {
                   debouncedSetSearchBy(event.currentTarget.value);
           }}/>
+          <div className={styles['marker-button-holder']}>
+            
+            <button className={`${styles['set-marker-button']} ${markerPlaced ? styles['active-marker-placed'] : ''}`}
+              onClick={(event) => {
+                if (markerPlaced == true) {
+                  console.log("MARKER PLACED FUCK OFF");
+                  return
+                }
+                console.log("Marker placed: " + markerPlaced)
+                event.stopPropagation(); 
+                event.preventDefault(); 
+                isPlacingMarker.current = true;
+              }}>
+              <FontAwesomeIcon icon={faMapMarkerAlt} />
+            </button>
+          </div>
         </div>
       </div>
         
