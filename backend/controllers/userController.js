@@ -126,6 +126,7 @@ module.exports = {
         var id = req.params.id;
 
         UserModel.findOne({_id: id})
+        .populate('profilePhoto')
         .then(user => {
             if (!user) {
                 return res.status(404).json({
@@ -137,7 +138,9 @@ module.exports = {
 			user.firstName = req.body.firstName ? req.body.firstName : user.firstName;
 			user.lastName = req.body.lastName ? req.body.lastName : user.lastName;
 			user.email = req.body.email ? req.body.email : user.email;
-			user.password = req.body.password ? req.body.password : user.password;
+			if (req.body.password) {
+                user.password = req.body.password;
+            }
 			
             user.save()
             .then(user => {
@@ -199,7 +202,7 @@ module.exports = {
               });
             
               
-              return res.status(200).json({user: user, token: token});
+              return res.status(200).json(user);
         });
     },
 

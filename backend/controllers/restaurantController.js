@@ -80,6 +80,20 @@ module.exports = {
         });
     },
 
+    listFromOwner: function (req, res) {
+        RestaurantModel.find({ owner: req.params.userId })
+        .populate('tags')
+        .populate('photo')
+        .then(restaurants => {
+            return res.json(restaurants);
+        }).catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting restaurants of this user.',
+                error: err
+            });
+        });
+    },
+
     /**
      * restaurantController.show()
      */
@@ -89,7 +103,6 @@ module.exports = {
         RestaurantModel.findOne({_id: id})
         .populate('menus')
         .populate('ratings')
-        .populate('photo')
         .then(restaurant => {
             if (!restaurant) {
                 return res.status(404).json({
@@ -167,7 +180,6 @@ module.exports = {
 			mealSurcharge : req.body.mealSurcharge,
 			workingHours : req.body.workingHours,
 			location : coords,
-            tags: req.body.tags
         });
 
         //console.log(restaurant);
