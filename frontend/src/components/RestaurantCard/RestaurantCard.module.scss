@@ -74,6 +74,7 @@
                         background: linear-gradient(90deg, $blue-second var(--partial-percentage), $blue-fifth calc(100% - var(--partial-percentage)));
                         -webkit-background-clip: text;
                         -webkit-text-fill-color: transparent;
+                        padding: 2%;
                     }
 
                     @media(max-width: 350px) {
