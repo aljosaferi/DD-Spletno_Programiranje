@@ -162,6 +162,39 @@ module.exports = {
         });
     },
 
+    approve: function (req, res) {
+        var id = req.params.id;
+
+        UserModel.findOne({_id: id})
+        .populate('profilePhoto')
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({
+                    message: 'No such user'
+                });
+            }
+
+            user.pendingApproval = false;
+			
+            user.save()
+            .then(user => {
+                return res.status(201).json(user);
+            })
+            .catch(err => {
+                return res.status(500).json({
+                message: 'Error when creating user',
+                error: err
+                });
+            });
+        })
+        .catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting user',
+                error: err
+            });
+        });
+    },
+
     /**
      * userController.remove()
      */
