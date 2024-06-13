@@ -228,7 +228,7 @@ function Restaurants() {
                 <div className={styles['restaurants']}>
                     {restaurants && restaurants.map((restaurant, index) => (
                         <>
-                            {index < 4 ?
+                            {index < 2 ?
                                 <Reveal direction='none' delay={index * 0.1} key={restaurant.id}>
                                     <RestaurantCard restaurant={restaurant}/>
                                 </Reveal>
