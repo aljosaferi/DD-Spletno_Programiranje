@@ -10,9 +10,11 @@ import 'leaflet.markercluster/dist/leaflet.markercluster';
 import Button from '../Button/Button';
 import { debounce } from 'lodash';
 
-
 import { getApiCall } from '../../api/apiCalls';
 import { motion } from 'framer-motion';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
 function Map() {
   
@@ -23,6 +25,10 @@ function Map() {
 
   const customIcon = new Icon({
     iconUrl: require("./marker.png"),
+    iconSize: [38, 38]
+  })
+  const blackMarkerIcon = new Icon({
+    iconUrl: require("./marker-black.png"),
     iconSize: [38, 38]
   })
 
@@ -38,6 +44,19 @@ function Map() {
   
   const mapRef = useRef<L.Map | null>(null);
   const markerClusterReference = useRef<any>(null);
+  const isPlacingMarker = useRef(false);
+  const [markerPlaced, setMarkerPlaced] = useState(false)
+  const [radiusDistance, setRadiusDistance] = useState("")
+  //const [coords, setCoords] = useState<L.LatLng>()
+  const [longitude, setLongitude] = useState(0);
+  const [latitude, setLatitude] = useState(0);
+  const [sortWithRadius, setSortWithRadius] = useState(false);
+  //const [circleLayer, setCircleLayer] = useState<L.Circle | null>(null);
+  const circleLayer = useRef<L.Circle | null>(null);
+
+  const [inputValue, setInputValue] = useState('');
+  const [clear, setClear] = useState(0);
+  const [marker, setMarker] = useState<L.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -47,6 +66,45 @@ function Map() {
         maxZoom: 22,
       });
       mapRef.current = map;
+
+      map.on('click', function(e) {
+        console.log("Is placing marker current: " + isPlacingMarker.current);
+        console.log("Marker placed: " + markerPlaced);
+        if (isPlacingMarker.current) {
+          isPlacingMarker.current = false;
+          //markerPlaced.current = true
+          setMarkerPlaced(true);
+
+          var coord = e.latlng;
+          var lat = coord.lat;
+          var lng = coord.lng;
+          setLongitude(lng);
+          setLatitude(lat);
+/*
+          console.log("Longitude: " + longitude + "|Latitude: " + latitude) */
+
+          /* console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
+          console.log(coord); */
+
+          const marker = L.marker(coord, { icon: blackMarkerIcon })
+          .on('click', e => {
+            if (mapRef.current) {
+              debugger;
+              e.target.remove();
+              //markerPlaced.current = false;
+              setMarkerPlaced(false);
+              //console.log(circleLayer)
+              
+              setClear(clear + 1);
+            }
+          });
+          setMarker(marker);
+
+          if (mapRef.current) {
+            mapRef.current.addLayer(marker);
+          }
+        }
+      });
 
       L.tileLayer('https://tile.jawg.io/jawg-light/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
         attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -65,6 +123,36 @@ function Map() {
       }
     };
   }, []);
+
+
+  
+  const drawCircle = () => {
+    if (circleLayer.current) {
+      circleLayer.current.remove();
+    }
+
+    var r = parseInt(radiusDistance);
+    if (isNaN(r)) {
+      r = 0;
+      console.log("CIGANNN")
+    } else {
+      setSortWithRadius(true)
+    }
+
+    const newCircle = L.circle([latitude, longitude], {
+      color: 'black',
+      fillColor: 'black',
+      fillOpacity: 0.1,
+      radius: r,
+    }).addTo(mapRef.current!);
+  
+    //setCircleLayer(newCircle);
+    circleLayer.current = newCircle
+  };
+
+  useEffect(() => {
+    console.log("Longitude: " + longitude + "|Latitude: " + latitude);
+  }, [longitude, latitude]);
 
   interface WorkingHours {
     day: string;
@@ -107,6 +195,7 @@ function Map() {
   }
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [radiusRestaurants, setRadiusRestaurants] = useState<Restaurant[]>([]);
   const markerListReference = useRef<{name: string, marker: L.Marker}[]>([]);
 
   const [searchBy, setSearchBy] = useState('');
@@ -116,17 +205,45 @@ function Map() {
 
   useEffect(() => {
     console.log(sortBy);
+    
 
-    const filterRestaurants = restaurants.filter(restaurant => {
-      const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
 
-      const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.some(t => t.name.includes(tag)));
-      return nameMatch && tagsMatch;
-    });
+    console.log("SORT WITH RADIUS: " + sortWithRadius)
+    
+    var filterRestaurants;
+    if (sortWithRadius) {
+      filterRestaurants = radiusRestaurants.filter(restaurant => {
+        const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
+
+        const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.some(t => t.name.includes(tag)));
+        return nameMatch && tagsMatch;
+      });
+    }
+    else {
+      filterRestaurants = restaurants.filter(restaurant => {
+        const nameMatch = restaurant.name.toLowerCase().includes(searchBy.toLowerCase());
+
+        const tagsMatch = Array.isArray(restaurant.tags) && sortBy.every(tag => restaurant.tags.some(t => t.name.includes(tag)));
+        return nameMatch && tagsMatch;
+      });
+    }
     console.log("filter restaurants" + filterRestaurants)
 
     handleMap(filterRestaurants);
   }, [searchBy, sortBy])
+
+  useEffect(() => {
+    debugger;
+    if (circleLayer.current) {
+      circleLayer.current.remove();
+    }
+    if (marker) {
+      marker.remove();
+      setMarkerPlaced(false);
+      isPlacingMarker.current = false;
+    }
+    setSortBy([])
+  }, [clear])
 
   useEffect(() => {
     const getRestaurants = async () => {
@@ -136,10 +253,26 @@ function Map() {
       setRestaurants(data);
 
       handleMap(data);
-      
     }
     getRestaurants();
   }, []);
+
+
+
+  useEffect(() => {
+    drawCircle();
+    console.log(circleLayer)
+
+    const getRestaurantsNear = async () => {
+      console.log("Longitude: " + longitude + "|Latitude: " + latitude)
+      const res = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants/near?lon=${longitude}&lat=${latitude}&distance=${radiusDistance}`);
+      const data: Restaurant[] = await res.json();
+      setRadiusRestaurants(data);
+      
+      handleMap(data);
+    }
+    getRestaurantsNear();
+  }, [radiusDistance])
 
   const handleMap = (data: Restaurant[]) => {
     if (markerClusterReference.current!) {
@@ -299,13 +432,29 @@ function Map() {
   return (
     <div className={styles['container']}>
       <div id="map" className={styles['map']}>
-        <div className={styles['search-bar']} style={{zIndex: 999, position: 'relative'}}>
+        <div className={styles['search-bar']} style={{zIndex: 2, position: 'relative', display: 'flex'}}>
           <input 
               type='text' 
               placeholder='Išči po imenu'
               onKeyUp={(event) => {
                   debouncedSetSearchBy(event.currentTarget.value);
           }}/>
+          <div className={styles['marker-button-holder']}>
+            
+            <button className={`${styles['set-marker-button']} ${markerPlaced ? styles['active-marker-placed'] : ''}`}
+              onClick={(event) => {
+                if (markerPlaced == true) {
+                  console.log("MARKER PLACED FUCK OFF");
+                  return
+                }
+                console.log("Marker placed: " + markerPlaced)
+                event.stopPropagation(); 
+                event.preventDefault(); 
+                isPlacingMarker.current = true;
+              }}>
+              <FontAwesomeIcon icon={faMapMarkerAlt} />
+            </button>
+          </div>
         </div>
       </div>
         
@@ -469,8 +618,17 @@ function Map() {
             </div>
             Celiakiji prijazni obroki
           </div>
+          <div className={styles['radius-interface']}>
+            <input 
+              type='text' 
+              placeholder='Polmer v metrih' 
+              value={inputValue} 
+              onChange={e => setInputValue(e.target.value)}
+            />
+            <Button type='primary' width='32%' onClick={() => setRadiusDistance(inputValue)}>Poišči</Button>
+          </div>
           <div className={styles['clear-choice-div']}>
-            <Button type='primary' width='100%' onClick={() => setSortBy([])}>Počisti izbiro</Button>
+            <Button type='primary' width='100%' onClick={() => {setSortWithRadius(false); setClear(clear + 1)}}>Počisti izbiro</Button>
           </div>
         </div>
       </motion.div>
