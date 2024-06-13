@@ -22,6 +22,10 @@ var userSchema = new Schema(
 			enum: ['regular', 'admin', 'restaurantOwner'], 
 			required: true 
 		},
+		'pendingApproval' : {
+			type: Boolean,
+			required: true,
+		} 
 	},
 	{ 
 		toJSON: { virtuals: true },
