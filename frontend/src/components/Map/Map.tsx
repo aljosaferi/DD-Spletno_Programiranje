@@ -15,6 +15,8 @@ import { motion } from 'framer-motion';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+
 
 function Map() {
   
@@ -428,7 +430,7 @@ function Map() {
   }
 
 
-
+  const navigate = useNavigate();
   return (
     <div className={styles['container']}>
       <div id="map" className={styles['map']}>
@@ -656,7 +658,7 @@ function Map() {
             <div className={styles['displayed-restaurant-info']}>Danes: {getClosingTime(activeRestaurant)}</div>
           </div>
           <div className={styles['back-button-container']}>
-            <Button type='primary' width='100%'>Več</Button>
+            <Button type='primary' width='100%' onClick={() => navigate(`/restaurant/${activeRestaurant?.id}`)}>Več</Button>
             <Button type='primary' width='100%' onClick={() => backButton()}>Nazaj</Button>
           </div>
         </div>
