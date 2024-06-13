@@ -104,6 +104,7 @@ module.exports = {
         RestaurantModel.findOne({_id: id})
         .populate('menus')
         .populate('ratings')
+        .populate('photo')
         .then(restaurant => {
             if (!restaurant) {
                 return res.status(404).json({
