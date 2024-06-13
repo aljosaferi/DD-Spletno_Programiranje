@@ -637,14 +637,17 @@ function Map() {
         
       {displayTopRestaurants ?
         <div className={styles['restaurants']}>
-          <div className={styles['restaurants-header']}>TOP RESTAVRACIJE</div>
-          {restaurants.map((restaurant) => (
-            <div key={restaurant._id} className={styles['restaurant-div']} onClick={() => displayRestaurant(restaurant)}>
-              <h3>{restaurant.name}</h3>
-              <div className={styles['restaurant-photo']}>
-                <img src={`http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}`} alt="restaurant" />
+          <div className={styles['restaurants-header']}>PRIPOROČAMO</div>
+          {restaurants
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 5)
+            .map((restaurant) => (
+              <div key={restaurant._id} className={styles['restaurant-div']} onClick={() => displayRestaurant(restaurant)}>
+                <h3>{restaurant.name}</h3>
+                <div className={styles['restaurant-photo']}>
+                  <img src={`http://${process.env.REACT_APP_URL}:3001${restaurant.photo.imagePath}`} alt="restaurant" />
+                </div>
               </div>
-            </div>
           ))}
         </div>
         :
