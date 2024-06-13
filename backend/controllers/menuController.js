@@ -53,6 +53,7 @@ module.exports = {
      * menuController.create()
      */
     create: function (req, res) {
+        console.log(req.body)
         var menu = new MenuModel({
 			dish : req.body.dish,
 			sideDishes : req.body.sideDishes,

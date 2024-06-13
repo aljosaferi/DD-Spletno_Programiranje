@@ -72,7 +72,7 @@ function NewsCard() {
             <AnimatePresence>
                 {isOpenDelete ?
                 <Modal handleClose={closeDelete}>
-                    <DeletePrompt handleClose={closeDelete} heading="Ali ste prepričani, da želite izbrisati novico?" content="Tega dejanja ni mogoče razveljaviti. "/>
+                    <DeletePrompt handleClose={closeDelete} handleConfirm={closeDelete} heading="Ali ste prepričani, da želite izbrisati novico?" content="Tega dejanja ni mogoče razveljaviti. "/>
                 </Modal>
                 :
                 null
