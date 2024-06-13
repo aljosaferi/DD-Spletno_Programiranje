@@ -6,6 +6,8 @@ import RestaurantCard from '../../components/RestaurantCard/RestaurantCard';
 
 import { debounce } from 'lodash';
 import Reveal from '../../components/Reveal/Reveal';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 type WorkingHour = {
     day: string;
@@ -45,8 +47,6 @@ export type Restaurant = {
 
 
 function Restaurants() {
-    const [restaurants, setRestaurants] = useState<Restaurant[] | null>(null);
-
     const [sortBy, setSortBy] = useState<'lowest-price-first' |
                                          'highest-price-first' | 
                                          'lowest-rated-first' | 
@@ -56,24 +56,22 @@ function Restaurants() {
     const [searchBy, setSearchBy] = useState('');
     const debouncedSetSearchBy = debounce((value) => setSearchBy(value), 250);                                     
 
-    useEffect(() => {
-        let params = {};
-        if (sortBy) {
-            params = {
-                ...params,
-                sortBy: sortBy
-            };
+    const fetchRestaurants = async ({ queryKey }) => {
+        const [_key, { sortBy, searchBy }] = queryKey;
+        let params = new URLSearchParams();
+        if (sortBy) params.append('sortBy', sortBy);
+        if (searchBy) params.append('name', searchBy);
+        const response = await fetch(`http://${process.env.REACT_APP_URL}:3001/restaurants?${params}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-        if (searchBy) {
-            params = {
-                ...params,
-                name: searchBy
-            };
-        }
-        getApiCall(`http://${process.env.REACT_APP_URL}:3001/restaurants`, params)
-        .then(data =>  { setRestaurants(data) })
-        .catch(error => console.log(error))
-    }, [sortBy, searchBy]);
+        return response.json();
+    };
+
+    const { data: restaurants, isLoading, error } = useQuery({
+        queryKey: ['restaurants', { sortBy, searchBy }],
+        queryFn: fetchRestaurants
+    });
 
     useEffect(() => {
         const handleWheel = (e) => {
