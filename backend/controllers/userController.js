@@ -98,6 +98,7 @@ module.exports = {
                 password : req.body.password,
                 profilePhoto : process.env.DEFAULT_AVATAR_ID,
                 userType : req.body.userType,
+                pendingApproval : req.body.userType === "restaurantOwner" ? true : false,
             });
         
         } catch(err) {
