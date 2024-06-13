@@ -70,6 +70,7 @@ module.exports = {
          }
         RestaurantModel.find(filter)
         .populate('tags')
+        .populate('photo')
         .then(restaurants => {
             return res.json(restaurants);
         }).catch(err => {
