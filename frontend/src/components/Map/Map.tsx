@@ -639,7 +639,7 @@ function Map() {
         <div className={styles['restaurants']}>
           <div className={styles['restaurants-header']}>PRIPOROČAMO</div>
           {restaurants
-            .sort(() => 0.5 - Math.random())
+            /* .sort(() => 0.5 - Math.random()) */
             .slice(0, 5)
             .map((restaurant) => (
               <div key={restaurant._id} className={styles['restaurant-div']} onClick={() => displayRestaurant(restaurant)}>
