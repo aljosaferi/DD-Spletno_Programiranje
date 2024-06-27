@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 function cookieJWTAuth(req, res, next){
     const token = req.cookies.token;
     if(!token) {
-        console.log("No token");
         return res.status(404).json({ "error": "No token provided" });
     }
 

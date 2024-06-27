@@ -126,8 +126,6 @@ module.exports = {
      * restaurantController.create()
      */
     create: async function (req, res) {
-        console.log("Create restaurant endpoint called");
-        console.log(req.body);
         var coords;
         if(!req.body.coordinates) {
             var requestOptions = {
@@ -139,7 +137,6 @@ module.exports = {
             
             const restaurantNameWords = req.body.name.toLowerCase().split(' ');
             if (!data.features || data.features.length == 0) {
-                console.log("IT GOES THROUGH HERE")
                 mappedCoordinates = req.body.location.coordinates.map(Number);
                 coords = {
                     type: 'Point',
@@ -147,11 +144,10 @@ module.exports = {
                 }
             }
             else {
-            //console.log(data.features);
                 var bestMatch = data.features[0];
                 var bestMatchScore = 0;
 
-                for(i in data.features) {
+                for(let i in data.features) {
                     if (!data.features[i].properties.name) continue;
                     var featureName = data.features[i].properties.name.toLowerCase();
                     var score = restaurantNameWords.reduce((acc, word) => acc + (featureName.includes(word) ? 1 : 0), 0);
@@ -161,10 +157,8 @@ module.exports = {
                     }
                 }
                 coords = bestMatch.geometry;
-                console.log("GEOMETRY " + coords);
             }
         } else {
-            console.log("TESTING")
             coords = req.body.location.coordinates.map(Number);
         }
 
@@ -184,7 +178,6 @@ module.exports = {
 			location : coords,
         });
 
-        //console.log(restaurant);
         restaurant.save()
         .then(restaurant => {
             return res.status(201).json(restaurant)

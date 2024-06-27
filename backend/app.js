@@ -6,7 +6,13 @@ var logger = require('morgan');
 require('dotenv').config();
 
 var mongoose = require("mongoose");
-var mongoDB = "mongodb+srv://admin:sSIqaEnhN9pQ4r3T@studentskaprehrana.acigcoy.mongodb.net/data?retryWrites=true&w=majority&appName=studentskaPrehrana"
+var mongoDB;
+if(process.env.NODE_ENV === 'test') {
+  mongoDB = "mongodb+srv://admin:sSIqaEnhN9pQ4r3T@studentskaprehrana.acigcoy.mongodb.net/test?retryWrites=true&w=majority&appName=studentskaPrehrana"
+} else {
+  mongoDB = "mongodb+srv://admin:sSIqaEnhN9pQ4r3T@studentskaprehrana.acigcoy.mongodb.net/data?retryWrites=true&w=majority&appName=studentskaPrehrana";
+}
+
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
