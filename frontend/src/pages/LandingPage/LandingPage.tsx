@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Carousel from '../../components/Carousel/Carousel';
 import Reveal from '../../components/Reveal/Reveal';
 import { EmblaOptionsType } from 'embla-carousel'
@@ -9,6 +10,38 @@ import NewsCard from '../../components/NewsCard/NewsCard';
 const OPTIONS: EmblaOptionsType = { align: 'start', slidesToScroll: 'auto' }
 
 function LandingPage() {
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    
+  useEffect(() => {
+    const handleWheel = (e) => {
+      e.preventDefault();
+
+      let scrollAmount = 0;
+      let slideTimer = setInterval(function(){
+          if(e.deltaY < 0) {
+              window.scrollBy(0, -7);
+          } else {
+              window.scrollBy(0, 7);
+          }
+          scrollAmount += 7;
+          if(scrollAmount >= Math.abs(e.deltaY)){
+              window.clearInterval(slideTimer);
+          }
+      }, 1);
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
+
     return (
         <div className={styles['container']}>
             <section className={styles['first']}>

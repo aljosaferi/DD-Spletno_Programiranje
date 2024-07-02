@@ -8,7 +8,7 @@
 
 @font-face {
     font-family: 'Mona Sans';
-    src: url('../public/fonts/Mona-Sans-Regular.otf');
+    src: url('../public/fonts/Mona-Sans-Regular-Sloveene.otf');
 }
 
 body {
@@ -86,4 +86,12 @@ textarea {
     &:active {
         background-color: $blue-second-active;
     }
+}
+
+.leaflet-pane {
+    z-index: 1 !important;
+  }
+
+.leaflet-top.leaflet-left {
+    z-index: 2 !important;
 }

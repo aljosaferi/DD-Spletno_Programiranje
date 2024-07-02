@@ -81,15 +81,32 @@ module.exports = {
             }
         }
 
-        var user = new UserModel({
-            username : req.body.username,
-            firstName : req.body.firstName,
-            lastName : req.body.lastName,
-            email : req.body.email,
-            password : req.body.password,
-            profilePhoto : process.env.DEFAULT_AVATAR_ID,
-            userType : req.body.userType,
-        });
+        try {
+            const existingUser = await UserModel.findOne({ username: req.body.username });
+        
+            if (existingUser) {
+                return res.status(400).json({
+                    message: 'Uporabnik s takim uporabniškim imenom že obstaja',
+                });
+            }
+        
+            var user = new UserModel({
+                username : req.body.username,
+                firstName : req.body.firstName,
+                lastName : req.body.lastName,
+                email : req.body.email,
+                password : req.body.password,
+                profilePhoto : process.env.DEFAULT_AVATAR_ID,
+                userType : req.body.userType,
+                pendingApproval : req.body.userType === "restaurantOwner" ? true : false,
+            });
+        
+        } catch(err) {
+            return res.status(500).json({
+                message: 'Cannot create account',
+                error: err
+            });
+        }
     
         user.save()
         .then(user => {
@@ -110,6 +127,7 @@ module.exports = {
         var id = req.params.id;
 
         UserModel.findOne({_id: id})
+        .populate('profilePhoto')
         .then(user => {
             if (!user) {
                 return res.status(404).json({
@@ -121,7 +139,42 @@ module.exports = {
 			user.firstName = req.body.firstName ? req.body.firstName : user.firstName;
 			user.lastName = req.body.lastName ? req.body.lastName : user.lastName;
 			user.email = req.body.email ? req.body.email : user.email;
-			user.password = req.body.password ? req.body.password : user.password;
+			if (req.body.password) {
+                user.password = req.body.password;
+            }
+			
+            user.save()
+            .then(user => {
+                return res.status(201).json(user);
+            })
+            .catch(err => {
+                return res.status(500).json({
+                message: 'Error when creating user',
+                error: err
+                });
+            });
+        })
+        .catch(err => {
+            return res.status(500).json({
+                message: 'Error when getting user',
+                error: err
+            });
+        });
+    },
+
+    approve: function (req, res) {
+        var id = req.params.id;
+
+        UserModel.findOne({_id: id})
+        .populate('profilePhoto')
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({
+                    message: 'No such user'
+                });
+            }
+
+            user.pendingApproval = false;
 			
             user.save()
             .then(user => {
@@ -180,8 +233,9 @@ module.exports = {
                 httpOnly: true,
                 maxAge: 3600000 // 1 hour in milliseconds
               });
-
-            return res.json(user);
+            
+              
+              return res.status(200).json(user);
         });
     },
 

@@ -5,7 +5,7 @@ import styles from './Reveal.module.scss'
 
 interface RevealProps {
     children: React.ReactNode;
-    direction?: "left" | "right" | "top" | "bottom";
+    direction?: "left" | "right" | "top" | "bottom" | "none";
     duration?: number
     delay?: number
 }
@@ -36,8 +36,10 @@ function Reveal({
             variants={{
                 hidden: { 
                     opacity: 0, 
-                    x: direction === "left" ? -75 : direction === "right" ? 75 : 0,
-                    y: direction === "top" ? -75 : direction === "bottom" ? 75 : 0
+                    ...(direction !== "none" && {
+                        x: direction === "left" ? -75 : direction === "right" ? 75 : 0,
+                        y: direction === "top" ? -75 : direction === "bottom" ? 75 : 0
+                    })
                 },
                 visible: { 
                     opacity: 1, x: 0, y: 0
